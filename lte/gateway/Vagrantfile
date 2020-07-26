@@ -14,7 +14,7 @@ Vagrant.require_version ">=1.9.1"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Mount magma directory in all VMs
-  config.vm.synced_folder "../..", "/home/vagrant/magma"
+  config.vm.synced_folder "../..", "/home/vagrant/magma" 
 
   config.vm.define :magma, primary: true do |magma|
     # Get our prepackaged box from the atlas cloud, based on
@@ -197,5 +197,52 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
     # documentation for more information about their specific syntax and use.
     config.ssh.insert_key = false
+  end
+
+  require 'vagrant-aws'
+  require 'vagrant-env'
+  require_relative 'patches.rb'
+  config.vm.define :magma_aws, autostart: false do |magma_aws|
+    # Get our prepackaged box from the atlas cloud, based on
+    # - debian/contrib-jessie64
+    # - linux kernel from debian jessie backports
+    # - updated vbguest-tool
+    magma_aws.env.enable # enable the env plugin
+    magma_aws.vm.box = "dummy"
+    magma_aws.vm.synced_folder ".", "/vagrant", disabled: true
+    magma_aws.vm.synced_folder "../..", "/home/vagrant/magma", disabled: true
+    magma_aws.vm.synced_folder "../..", "/home/admin/magma", type: 'rsync'
+    #magma_aws.vbguest.auto_update = false
+
+    # Create a private network, which allows host-only access to the machine
+    # using a specific IP.
+    #magma.vm.network "private_network", ip: "192.168.60.142", nic_type: "82540EM"
+    # iperf3 trfserver routable IP.
+    #magma.vm.network "private_network", ip: "192.168.129.1", nic_type: "82540EM"
+
+    magma_aws.vm.provider "aws" do |aws, override|
+      # aws authorization
+      aws.access_key_id = ENV['AWS_ACCESS_KEY_ID']#'AKIA2LZ52ADFKRYXTO4U'
+      aws.secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']#'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'
+      # Specify SSH keypair to use
+      aws.keypair_name = 'mt_keypair'
+      # Specify region, AMI ID, and security group(s)
+      aws.region = 'us-west-2'
+      aws.ami = 'ami-042b622d9bd9f46be'
+      aws.security_groups = ['vagrant']
+      aws.instance_type = 't3.medium' 
+      # ssh related
+      override.ssh.username = "admin"
+      override.ssh.private_key_path = ENV['KEY_FILE_PATH']#{}"~/Downloads/aws/mt_key.pem"
+    end
+    magma_aws.vm.provision "ansible" do |ansible|
+      ansible.host_key_checking = false
+      ansible.playbook = "deploy/magma_aws.yml"
+      ansible.limit = "all" # otherwise would limit itself to "magma_aws"
+      ansible.inventory_path = "ec2.py" # dynamic inventory
+      ansible.raw_arguments = ENV.fetch("ANSIBLE_ARGS", "").split(";") + 
+                              ["--timeout=30"]
+      ansible.verbose = 'v'
+    end
   end
 end
