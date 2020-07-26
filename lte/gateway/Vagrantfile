@@ -222,8 +222,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     magma_aws.vm.provider "aws" do |aws, override|
       # aws authorization
-      aws.access_key_id = ENV['AWS_ACCESS_KEY_ID']#'AKIA2LZ52ADFKRYXTO4U'
-      aws.secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']#'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'
+      aws.access_key_id = ENV['AWS_ACCESS_KEY_ID']
+      aws.secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
       # Specify SSH keypair to use
       aws.keypair_name = 'mt_keypair'
       # Specify region, AMI ID, and security group(s)
@@ -233,7 +233,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       aws.instance_type = 't3.medium' 
       # ssh related
       override.ssh.username = "admin"
-      override.ssh.private_key_path = ENV['KEY_FILE_PATH']#{}"~/Downloads/aws/mt_key.pem"
+      override.ssh.private_key_path = ENV['KEY_FILE_PATH']
     end
     magma_aws.vm.provision "ansible" do |ansible|
       ansible.host_key_checking = false

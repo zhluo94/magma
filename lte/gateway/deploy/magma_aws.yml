@@ -13,7 +13,6 @@
 
   vars:
     ansible_user: admin
-    #ansible_ssh_private_key_file: /home/zhluo/Downloads/aws/mt_key.pem
     ansible_ssh_private_key_file: "{{ lookup('env','KEY_FILE_PATH') }}"
     magma_root: /home/{{ ansible_user }}/magma
     preburn: false
