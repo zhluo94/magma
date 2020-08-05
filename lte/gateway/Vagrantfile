@@ -214,32 +214,121 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     magma_aws.vm.synced_folder "../..", "/home/admin/magma", type: 'rsync'
     #magma_aws.vbguest.auto_update = false
 
-    # Create a private network, which allows host-only access to the machine
-    # using a specific IP.
-    #magma.vm.network "private_network", ip: "192.168.60.142", nic_type: "82540EM"
-    # iperf3 trfserver routable IP.
-    #magma.vm.network "private_network", ip: "192.168.129.1", nic_type: "82540EM"
-
     magma_aws.vm.provider "aws" do |aws, override|
       # aws authorization
       aws.access_key_id = ENV['AWS_ACCESS_KEY_ID']
       aws.secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
       # Specify SSH keypair to use
-      aws.keypair_name = 'mt_keypair'
+      aws.keypair_name = ENV['KEY_PAIR_NAME']
       # Specify region, AMI ID, and security group(s)
-      aws.region = 'us-west-2'
-      aws.ami = 'ami-042b622d9bd9f46be'
-      aws.security_groups = ['vagrant']
-      aws.instance_type = 't3.medium' 
+      aws.region = ENV['AWS_REGION']
+      aws.ami = ENV['MAGMA_AMI']
+      aws.security_groups = [ENV['SECURITY_GROUP']] #['vagrant'], need to use ids when subnet_id is specified
+      aws.instance_type = ENV['MAGMA_INSTANCE_TYPE']
       # ssh related
       override.ssh.username = "admin"
       override.ssh.private_key_path = ENV['KEY_FILE_PATH']
+      # subnet
+      aws.subnet_id= ENV['SUBNET_ID']
+      aws.unregister_elb_from_az = false # instructed in the vagrant-aws repo for non-default vpc
     end
     magma_aws.vm.provision "ansible" do |ansible|
       ansible.host_key_checking = false
       ansible.playbook = "deploy/magma_aws.yml"
       ansible.limit = "all" # otherwise would limit itself to "magma_aws"
-      ansible.inventory_path = "ec2.py" # dynamic inventory
+      ansible.inventory_path = "deploy/hosts"
+      #ansible.inventory_path = "ec2.py" # dynamic inventory
+      ansible.raw_arguments = ENV.fetch("ANSIBLE_ARGS", "").split(";") + 
+                              ["--timeout=30"]
+      ansible.verbose = 'v'
+    end
+  end
+
+  require 'vagrant-aws'
+  require 'vagrant-env'
+  require_relative 'patches.rb'
+  config.vm.define :magma_test_aws, autostart: false do |magma_test_aws|
+    # Get our prepackaged box from the atlas cloud, based on
+    # - debian/contrib-jessie64
+    # - linux kernel from debian jessie backports
+    # - updated vbguest-tool
+    magma_test_aws.env.enable # enable the env plugin
+    magma_test_aws.vm.box = "dummy"
+    magma_test_aws.vm.synced_folder ".", "/vagrant", disabled: true
+    magma_test_aws.vm.synced_folder "../..", "/home/vagrant/magma", disabled: true
+    magma_test_aws.vm.synced_folder "../..", "/home/admin/magma", type: 'rsync'
+    #magma_aws.vbguest.auto_update = false
+    config.ssh.forward_agent = true
+
+    magma_test_aws.vm.provider "aws" do |aws, override|
+      # aws authorization
+      aws.access_key_id = ENV['AWS_ACCESS_KEY_ID']
+      aws.secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
+      # Specify SSH keypair to use
+      aws.keypair_name = ENV['KEY_PAIR_NAME']
+      # Specify region, AMI ID, and security group(s)
+      aws.region = ENV['AWS_REGION']
+      aws.ami = ENV['MAGMA_TEST_AMI']
+      aws.security_groups = [ENV['SECURITY_GROUP']] #['vagrant'], need to use ids when subnet_id is specified
+      aws.instance_type = ENV['MAGMA_TEST_INSTANCE_TYPE']
+      # ssh related
+      override.ssh.username = "admin"
+      override.ssh.private_key_path = ENV['KEY_FILE_PATH']
+      # subnet
+      aws.subnet_id= ENV['SUBNET_ID']
+      aws.unregister_elb_from_az = false # instructed in the vagrant-aws repo for non-default vpc
+    end
+    magma_test_aws.vm.provision "ansible" do |ansible|
+      ansible.host_key_checking = false
+      ansible.playbook = "deploy/magma_test_aws.yml"
+      ansible.limit = "all" # otherwise would limit itself to "magma_aws"
+      ansible.inventory_path = "deploy/hosts"
+      #ansible.inventory_path = "ec2.py" # dynamic inventory
+      ansible.raw_arguments = ENV.fetch("ANSIBLE_ARGS", "").split(";") + 
+                              ["--timeout=30"]
+      ansible.verbose = 'v'
+    end
+  end
+
+  require 'vagrant-aws'
+  require 'vagrant-env'
+  require_relative 'patches.rb'
+  config.vm.define :magma_trfserver_aws, autostart: false do |magma_trfserver_aws|
+    # Get our prepackaged box from the atlas cloud, based on
+    # - debian/contrib-jessie64
+    # - linux kernel from debian jessie backports
+    # - updated vbguest-tool
+    magma_trfserver_aws.env.enable # enable the env plugin
+    magma_trfserver_aws.vm.box = "dummy"
+    magma_trfserver_aws.vm.synced_folder ".", "/vagrant", disabled: true
+    magma_trfserver_aws.vm.synced_folder "../..", "/home/vagrant/magma", disabled: true
+    magma_trfserver_aws.vm.synced_folder "../..", "/home/admin/magma", type: 'rsync'
+    #magma_aws.vbguest.auto_update = false
+
+    magma_trfserver_aws.vm.provider "aws" do |aws, override|
+      # aws authorization
+      aws.access_key_id = ENV['AWS_ACCESS_KEY_ID']
+      aws.secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
+      # Specify SSH keypair to use
+      aws.keypair_name = ENV['KEY_PAIR_NAME']
+      # Specify region, AMI ID, and security group(s)
+      aws.region = ENV['AWS_REGION']
+      aws.ami = ENV['MAGMA_TRF_AMI']
+      aws.security_groups = [ENV['SECURITY_GROUP']] #['vagrant'], need to use ids when subnet_id is specified
+      aws.instance_type = ENV['MAGMA_TRF_INSTANCE_TYPE']
+      # ssh related
+      override.ssh.username = "admin"
+      override.ssh.private_key_path = ENV['KEY_FILE_PATH']
+      # subnet
+      aws.subnet_id= ENV['SUBNET_ID']
+      aws.unregister_elb_from_az = false # instructed in the vagrant-aws repo for non-default vpc
+    end
+    magma_trfserver_aws.vm.provision "ansible" do |ansible|
+      ansible.host_key_checking = false
+      ansible.playbook = "deploy/magma_trfserver_aws.yml"
+      ansible.limit = "all" # otherwise would limit itself to "magma_aws"
+      ansible.inventory_path = "deploy/hosts"
+      #ansible.inventory_path = "ec2.py" # dynamic inventory
       ansible.raw_arguments = ENV.fetch("ANSIBLE_ARGS", "").split(";") + 
                               ["--timeout=30"]
       ansible.verbose = 'v'
