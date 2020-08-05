@@ -1,0 +1,41 @@
+syntax = 'proto3';
+
+package magma.broker;
+
+//option go_package = "";
+
+service Brokerd {
+    // authentication & authorization
+    rpc Auth(AuthRequest) returns (AuthResponse) {
+    }
+    // billing
+    rpc ReportUsage(Usage) returns (Empty) {
+    }
+    // handover
+    // ..
+}
+
+// TODO
+message AuthRequest {
+}
+
+message AuthResponse {
+    message QosInfo {
+        string QCI = 1;
+    }
+
+    // TODO
+    message AuthVector {
+        string session_id = 1;
+    }
+
+    repeated AuthVector auth_vector = 1;
+
+    repeated QosInfo qos_info = 2;
+}
+
+message Usage {
+    uint32 num_bytes = 1;
+}
+
+message Empty {}
