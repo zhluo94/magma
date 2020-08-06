@@ -1,1 +1,1 @@
-# μTelco service implementations
+# μTelco: brokerd client implementations

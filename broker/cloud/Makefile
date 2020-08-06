@@ -1,1 +1,1 @@
-# broker service implementations
+# broker: brokerd and subd implementations
