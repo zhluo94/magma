@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package magma.broker;
+//option go_package = "magma/broker/cloud/go/protos";
+
+message Void {
+}
+
+message Bytes {
+    bytes val = 1;
+}
+
+message Usage {
+    uint32 num_bytes = 1;
+}
+
