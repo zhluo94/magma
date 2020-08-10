@@ -15,7 +15,9 @@ from magma.subscriberdb.store.base import SubscriberNotFoundError
 
 from feg.protos import s6a_proxy_pb2, s6a_proxy_pb2_grpc
 
-
+"""
+TODO: This file should replace the content in /lte/gateway/python/magma/subscriberdb/protocols/s6a_proxy_servicer.py
+"""
 class S6aProxyRpcServicer(s6a_proxy_pb2_grpc.S6aProxyServicer):
     """
     gRPC based server for the S6aProxy.
