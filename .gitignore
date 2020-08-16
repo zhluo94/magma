@@ -29,7 +29,7 @@ build/
 develop-eggs/
 dist/
 eggs/
-lib/
+#lib/
 lib64/
 !feg/radius/lib/
 parts/

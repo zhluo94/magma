@@ -11,6 +11,8 @@ service Brokerd {
     rpc BrokerAuthenticationInformation (BrokerAuthenticationInformationRequest) returns (BrokerAuthenticationInformationAnswer) {}
 
     // ..update location etc.
+    rpc BrokerUpdateLocation (BrokerUpdateLocationRequest) returns (BrokerUpdateLocationAnswer) {}
+    rpc BrokerPurgeUE (BrokerPurgeUERequest) returns (BrokerPurgeUEAnswer) {}
 
     // -- billing protocol
     rpc ReportUsage(Usage) returns (Void) {
@@ -18,18 +20,18 @@ service Brokerd {
     // -- handover protocol
 }
 
-message BrokerAuthenticationInformationRequest {
-    AuthenticationInformationRequest content = 1;
-    string signature = 2;
-}
+// message BrokerAuthenticationInformationRequest {
+//     AuthenticationInformationRequest content = 1;
+//     string signature = 2;
+// }
 
-message BrokerAuthenticationInformationAnswer {
-    AuthenticationInformationAnswer content = 1;
-    string signature = 2;
-}
+// message BrokerAuthenticationInformationAnswer {
+//     AuthenticationInformationAnswer content = 1;
+//     string signature = 2;
+// }
 
 // Authentication Information Request (Section 7.2.5, S6a)
-message AuthenticationInformationRequest {
+message BrokerAuthenticationInformationRequest {
     // Subscriber identifier
     string user_name = 1;
     // Visted site identifier
@@ -44,7 +46,7 @@ message AuthenticationInformationRequest {
 
 
 // Authentication Information Answer (Section 7.2.6, S6a)
-message AuthenticationInformationAnswer {
+message BrokerAuthenticationInformationAnswer {
     // EPC error code on failure
     ErrorCode error_code = 1;
     // Authentication vectors matching the requested number
@@ -57,6 +59,92 @@ message AuthenticationInformationAnswer {
         bytes autn = 3;
         bytes kasme = 4;
     }
+}
+
+// Update Location Request (Section 7.2.3)
+message BrokerUpdateLocationRequest {
+    // Subscriber identifier
+    string user_name = 1;
+    // Visited site identifier
+    bytes visited_plmn = 2;
+
+    // Selective unrolling of ULR-Flags 29.272 Table 7.3.7/1
+    // Skip subscription data in response
+    bool skip_subscriber_data = 3; // bit 2
+    // Send Cancel Location to other EPCs serving the UE
+    bool initial_attach = 4; // bit 5
+}
+
+// Update Location Answer (Section 7.2.4)
+message BrokerUpdateLocationAnswer {
+    // EPC error code on failure
+    ErrorCode error_code = 1;
+    // Identifier of the default APN
+    uint32 default_context_id = 2;
+    // Subscriber authorized aggregate bitrate
+    AggregatedMaximumBitrate total_ambr = 3;
+    // Indicates to wipe other stored APNs
+    bool all_apns_included = 4;
+    // APN configurations
+    repeated APNConfiguration apn = 5;
+
+    bytes msisdn = 7;
+
+    // Network Access Mode AVP (Section 7.3.21)
+    enum NetworkAccessMode {
+        PACKET_AND_CIRCUIT = 0;
+        RESERVED = 1;
+        ONLY_PACKET = 2;
+    }
+
+    NetworkAccessMode network_access_mode = 8;
+
+    message APNConfiguration {
+        // APN identifier
+        uint32 context_id = 1;
+        // Contains either the APN Name or wildcard "*"
+        string service_selection = 2;
+        // APN QoS profile
+        QoSProfile qos_profile = 3;
+        // APN authorized bitrate
+        AggregatedMaximumBitrate ambr = 4;
+
+        enum PDNType {
+            IPV4 = 0;
+            IPV6 = 1;
+            IPV4V6 = 2;
+            IPV4_OR_IPV6 = 3;
+        }
+
+        PDNType pdn = 5;
+
+        // For details about values see 29.212
+        message QoSProfile {
+            int32 class_id = 1;
+            uint32 priority_level = 2;
+            bool preemption_capability = 3;
+            bool preemption_vulnerability = 4;
+        }
+    }
+
+    message AggregatedMaximumBitrate {
+        // Maximum uplink bitrate
+        uint32 max_bandwidth_ul = 1;
+        // Maximum downlink bitrate
+        uint32 max_bandwidth_dl = 2;
+    }
+}
+
+// Purge UE Request (Section 7.2.14)
+message BrokerPurgeUERequest {
+    // Subscriber identifier
+    string user_name = 1;
+}
+
+// Purge UE Answer (Section 7.2.15)
+message BrokerPurgeUEAnswer {
+    // EPC error code on failure
+    ErrorCode error_code = 1;
 }
 
 // ErrorCode reflects Experimental-Result values which are 3GPP failures

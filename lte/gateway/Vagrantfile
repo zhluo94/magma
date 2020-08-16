@@ -229,7 +229,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       override.ssh.username = "admin"
       override.ssh.private_key_path = ENV['KEY_FILE_PATH']
       # subnet
-      aws.subnet_id= ENV['SUBNET_ID']
+      aws.subnet_id = ENV['SUBNET_ID']
+      aws.private_ip_address = ENV['MAGMA_NET0']
       aws.unregister_elb_from_az = false # instructed in the vagrant-aws repo for non-default vpc
     end
     magma_aws.vm.provision "ansible" do |ansible|
@@ -276,6 +277,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       override.ssh.private_key_path = ENV['KEY_FILE_PATH']
       # subnet
       aws.subnet_id= ENV['SUBNET_ID']
+      aws.private_ip_address = ENV['MAGMA_TEST_NET0']
       aws.unregister_elb_from_az = false # instructed in the vagrant-aws repo for non-default vpc
     end
     magma_test_aws.vm.provision "ansible" do |ansible|
@@ -321,6 +323,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       override.ssh.private_key_path = ENV['KEY_FILE_PATH']
       # subnet
       aws.subnet_id= ENV['SUBNET_ID']
+      aws.private_ip_address = ENV['MAGMA_TRF_NET0']
       aws.unregister_elb_from_az = false # instructed in the vagrant-aws repo for non-default vpc
     end
     magma_trfserver_aws.vm.provision "ansible" do |ansible|

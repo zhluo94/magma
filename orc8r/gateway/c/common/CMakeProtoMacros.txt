@@ -11,6 +11,7 @@ set(ORC8R_PROTO_DIR ${MAGMA_ROOT}/orc8r/protos)
 set(LTE_PROTO_DIR ${MAGMA_ROOT}/lte/protos)
 set(FEG_PROTO_DIR ${MAGMA_ROOT}/feg/protos)
 set(CWF_PROTO_DIR ${MAGMA_ROOT}/feg/gateway/services/aaa/protos)
+set(BROKER_PROTO_DIR ${MAGMA_ROOT}/broker/protos)
 set(PROMETHEUS_PATH ${ORC8R_PROTO_DIR}/prometheus)
 set(GRPC_CPP_PLUGIN_PATH "/usr/local/bin" CACHE STRING "Path for grpc_cpp_plugin")
 

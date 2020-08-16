@@ -176,6 +176,10 @@ void itti_free_msg_content(MessageDef* const message_p)
     case S6A_UPDATE_LOCATION_ANS:
     case S6A_AUTH_INFO_REQ:
     case S6A_AUTH_INFO_ANS:
+    case BROKER_UPDATE_LOCATION_REQ:
+    case BROKER_UPDATE_LOCATION_ANS:
+    case BROKER_AUTH_INFO_REQ:
+    case BROKER_AUTH_INFO_ANS:
       // DO nothing
       break;
 

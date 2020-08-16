@@ -55,6 +55,8 @@
 #include "mme_config.h"
 #include "timer.h"
 #include "s6a_client_api.h"
+// added for broker uTelco
+#include "broker_client_api.h"
 
 #define S6A_PEER_CONNECT_TIMEOUT_MICRO_SEC (0)
 #define S6A_PEER_CONNECT_TIMEOUT_SEC (1)
@@ -108,13 +110,70 @@ void *s6a_thread(void *args)
     DevAssert(received_message_p);
 
     switch (ITTI_MSG_ID(received_message_p)) {
+      case BROKER_AUTH_INFO_REQ: {
+         rc = broker_authentication_info_req(&received_message_p->ittiMsg.broker_auth_info_req);
+         if (rc) {
+          OAILOG_DEBUG(
+            LOG_S6A,
+            "Sending broker AIR for imsi=%s\n",
+            received_message_p->ittiMsg.broker_auth_info_req.imsi);
+        } else {
+          OAILOG_ERROR(
+            LOG_S6A,
+            "Failure in sending broker AIR for imsi=%s\n",
+            received_message_p->ittiMsg.broker_auth_info_req.imsi);
+        }
+      } break;
+
+       case BROKER_UPDATE_LOCATION_REQ: {
+        rc = broker_update_location_req(&received_message_p->ittiMsg.broker_update_location_req);
+        if (rc) {
+          OAILOG_DEBUG(
+            LOG_S6A,
+            "Sending broker ULR for imsi=%s\n",
+            received_message_p->ittiMsg.broker_update_location_req.imsi);
+        } else {
+          OAILOG_ERROR(
+            LOG_S6A,
+            "Failure in sending broker ULR for imsi=%s\n",
+            received_message_p->ittiMsg.broker_update_location_req.imsi);
+        }
+      } break;
+
+      case BROKER_PURGE_UE_REQ: {
+        uint8_t imsi_length;
+        imsi_length = received_message_p->ittiMsg.broker_purge_ue_req.imsi_length;
+        if (imsi_length > IMSI_BCD_DIGITS_MAX) {
+          OAILOG_ERROR(
+            LOG_S6A, "imsi length exceeds IMSI_BCD_DIGITS_MAX length \n");
+        }
+        received_message_p->ittiMsg.broker_purge_ue_req.imsi[imsi_length] = '\0';
+        rc = broker_purge_ue(received_message_p->ittiMsg.broker_purge_ue_req.imsi);
+
+        if (rc) {
+          OAILOG_DEBUG(
+            LOG_S6A,
+            "Sending broker pur for imsi=%s\n",
+            received_message_p->ittiMsg.broker_purge_ue_req.imsi);
+        } else {
+          OAILOG_ERROR(
+            LOG_S6A,
+            "Failure in sending broker pur for imsi=%s\n",
+            received_message_p->ittiMsg.broker_purge_ue_req.imsi);
+        }
+      } break;
+
       case MESSAGE_TEST: {
         OAI_FPRINTF_INFO("TASK_S6A received MESSAGE_TEST\n");
       } break;
       case S6A_UPDATE_LOCATION_REQ: {
 #if S6A_OVER_GRPC
+        #if BROKER_INTEG_TEST
+        rc = broker_update_location_req( (broker_update_location_req_t *) &received_message_p->ittiMsg.s6a_update_location_req);
+        #else 
         rc = s6a_update_location_req(
           &received_message_p->ittiMsg.s6a_update_location_req);
+        #endif 
 #else
         rc = s6a_generate_update_location(
           &received_message_p->ittiMsg.s6a_update_location_req);
@@ -133,8 +192,12 @@ void *s6a_thread(void *args)
       } break;
       case S6A_AUTH_INFO_REQ: {
 #if S6A_OVER_GRPC
+        #if BROKER_INTEG_TEST
+        rc = broker_authentication_info_req( (broker_auth_info_req_t *) &received_message_p->ittiMsg.s6a_auth_info_req);
+        #else 
         rc = s6a_authentication_info_req(
           &received_message_p->ittiMsg.s6a_auth_info_req);
+        #endif
 #else
         rc = s6a_generate_authentication_info_req(
           &received_message_p->ittiMsg.s6a_auth_info_req);
@@ -207,7 +270,11 @@ void *s6a_thread(void *args)
             LOG_S6A, "imsi length exceeds IMSI_BCD_DIGITS_MAX length \n");
         }
         received_message_p->ittiMsg.s6a_purge_ue_req.imsi[imsi_length] = '\0';
+        #if BROKER_INTEG_TEST
+        rc = broker_purge_ue(received_message_p->ittiMsg.s6a_purge_ue_req.imsi);
+        #else
         rc = s6a_purge_ue(received_message_p->ittiMsg.s6a_purge_ue_req.imsi);
+        #endif
 #else
         rc = s6a_generate_purge_ue_req(
           &received_message_p->ittiMsg.s6a_purge_ue_req);

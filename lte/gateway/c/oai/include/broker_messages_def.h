@@ -26,26 +26,40 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-
-#ifndef FILE_MESSAGES_TYPES_SEEN
-#define FILE_MESSAGES_TYPES_SEEN
-
-#include "intertask_messages_types.h"
-#include "timer_messages_types.h"
-
-#include "security_types.h"
-
-#include "gtpv1_u_messages_types.h"
-#include "ip_forward_messages_types.h"
-#include "s11_messages_types.h"
-#include "s1ap_messages_types.h"
-#include "s6a_messages_types.h"
-#include "sctp_messages_types.h"
-#include "gx_messages_types.h"
-#include "mme_app_messages_types.h"
-#include "service303_messages_types.h"
-#include "sgs_messages_types.h"
-#include "async_system_messages_types.h"
-// Added for broker uTelco
-#include "broker_messages_types.h"
-#endif /* FILE_MESSAGES_TYPES_SEEN */
+//WARNING: Do not include this header directly. Use intertask_interface.h instead.
+/*! \file broker_messages_def.h
+  \brief
+  \author Sebastien ROUX, Lionel Gauthier
+  \company Eurecom
+  \email: lionel.gauthier@eurecom.fr
+*/
+MESSAGE_DEF(
+  BROKER_AUTH_INFO_REQ,
+  MESSAGE_PRIORITY_MED,
+  broker_auth_info_req_t,
+  broker_auth_info_req)
+MESSAGE_DEF(
+  BROKER_AUTH_INFO_ANS,
+  MESSAGE_PRIORITY_MED,
+  broker_auth_info_ans_t,
+  broker_auth_info_ans)
+MESSAGE_DEF(
+  BROKER_UPDATE_LOCATION_REQ,
+  MESSAGE_PRIORITY_MED,
+  broker_update_location_req_t,
+  broker_update_location_req)
+MESSAGE_DEF(
+  BROKER_UPDATE_LOCATION_ANS,
+  MESSAGE_PRIORITY_MED,
+  broker_update_location_ans_t,
+  broker_update_location_ans)
+MESSAGE_DEF(
+  BROKER_PURGE_UE_REQ,
+  MESSAGE_PRIORITY_MED,
+  broker_purge_ue_req_t,
+  broker_purge_ue_req)
+MESSAGE_DEF(
+  BROKER_PURGE_UE_ANS,
+  MESSAGE_PRIORITY_MED,
+  broker_purge_ue_ans_t,
+  broker_purge_ue_ans)

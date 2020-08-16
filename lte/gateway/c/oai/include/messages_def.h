@@ -42,3 +42,5 @@
 #include "service303_messages_def.h"
 #include "sgs_messages_def.h"
 #include "async_system_messages_def.h"
+// Added for broker uTelco
+#include "broker_messages_def.h"

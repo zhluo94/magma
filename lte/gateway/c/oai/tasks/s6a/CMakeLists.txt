@@ -16,7 +16,7 @@ add_library(TASK_S6A
     )
 target_link_libraries(TASK_S6A
     COMMON
-    LIB_BSTR LIB_HASHTABLE LIB_S6A_PROXY
+    LIB_BSTR LIB_HASHTABLE LIB_S6A_PROXY LIB_BROKER_PROXY
 )
 target_include_directories(TASK_S6A PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
