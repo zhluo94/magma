@@ -5,7 +5,7 @@
 # LICENSE file in the root directory of this source tree.
 #
 PYTHON_SRCS=$(MAGMA_ROOT)/lte/gateway/python $(MAGMA_ROOT)/orc8r/gateway/python
-PROTO_LIST:=orc8r_protos lte_protos feg_protos
+PROTO_LIST:=orc8r_protos lte_protos feg_protos broker_protos
 SWAGGER_LIST:=lte_swagger_specs orc8r_swagger_specs
 
 # Path to the test files

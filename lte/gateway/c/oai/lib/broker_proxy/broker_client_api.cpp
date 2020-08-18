@@ -127,6 +127,8 @@ bool broker_purge_ue(const char *imsi)
   // if (!get_s6a_relay_enabled()) {
   //   return true;
   // }
+  return true;
+  
   magma::brokerClient::purge_ue(
     imsi,
     [imsiStr = std::string(imsi)](

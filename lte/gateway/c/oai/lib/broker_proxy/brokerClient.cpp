@@ -114,7 +114,7 @@ brokerClient::brokerClient()
   //   stub_ = S6aProxy::NewStub(channel);
   // }
 
-  auto channel = ServiceRegistrySingleton::Instance()->GetGrpcChannel("brokerd", ServiceRegistrySingleton::CLOUD);
+  auto channel = ServiceRegistrySingleton::Instance()->GetGrpcChannel("brokerd", ServiceRegistrySingleton::LOCAL);
   stub_ = Brokerd::NewStub(channel);
 
   std::thread resp_loop_thread([&]() { rpc_response_loop(); });

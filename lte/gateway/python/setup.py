@@ -45,6 +45,7 @@ setup(
         'magma.subscriberdb.protocols.diameter',
         'magma.subscriberdb.protocols.diameter.application',
         'magma.subscriberdb.store',
+        'magma.brokerd',
     ],
     scripts=[
         'scripts/agw_health_cli.py',

@@ -236,3 +236,7 @@ message MonitorD {
     orc8r.LogLevel log_level = 1;
     int32 polling_interval = 60;
 }
+
+message BrokerD {
+    orc8r.LogLevel log_level = 1;
+}
