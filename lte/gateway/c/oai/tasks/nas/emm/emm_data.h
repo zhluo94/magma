@@ -56,6 +56,11 @@ Description Defines internal private data handled by EPS Mobility
 #include "EpsNetworkFeatureSupport.h"
 #include "MobileStationClassmark2.h"
 #include "esm_data.h"
+// added for brokerd utelco
+#include <openssl/rsa.h> 
+#include <openssl/ec.h>
+#include <openssl/pem.h>
+#include <openssl/err.h>
 
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
@@ -235,6 +240,14 @@ typedef struct emm_context_s {
   int remaining_vectors; // remaining unused vectors
   auth_vector_t _vector
     [MAX_EPS_AUTH_VECTORS]; /* EPS authentication vector                            */
+
+  // added for broker uTelco
+  broker_auth_vector_t _broker_vector[MAX_EPS_AUTH_VECTORS]; 
+  RSA* ut_private_rsa;
+  EC_KEY* ut_private_ecdsa;
+  EC_KEY* br_public_ecdsa;
+  int br_id; // broker id
+
   emm_security_context_t
     _security; /* Current EPS security context: The security context which has been activated most recently. Note that a current EPS
                                                         security context originating from either a mapped or native EPS security context may exist simultaneously with a native
@@ -563,6 +576,21 @@ void emm_context_dump(
   const uint8_t indent_spaces,
   bstring bstr_dump) __attribute__((nonnull));
 
+// added for brokerd utelco
+/*
+ * Structure of the keys
+ * -------------------------
+ */
+typedef struct ut_keys_s {
+  /*
+   * Keys
+   * ------------
+   */
+  RSA* ut_private_rsa;
+  EC_KEY* ut_private_ecdsa;
+  EC_KEY* br_public_ecdsa;
+} ut_keys_t;
+
 /****************************************************************************/
 /********************  G L O B A L    V A R I A B L E S  ********************/
 /****************************************************************************/
@@ -573,7 +601,8 @@ void emm_context_dump(
  * --------------------------------------------------------------------------
  */
 extern emm_data_t _emm_data;
-
+// added for brokerd utelco
+extern ut_keys_t _ut_keys;
 /****************************************************************************/
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/

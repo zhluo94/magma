@@ -1,0 +1,21 @@
+{
+  "builders": [{
+    "type": "amazon-ebs",
+    "access_key": "AKIA2LZ52ADFKRYXTO4U",
+    "secret_key": "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",
+    "region": "us-west-2",
+    "subnet_id" : "{{user `subnet`}}",
+    "vpc_id" : "{{user `vpc`}}",
+    "source_ami": "ami-042b622d9bd9f46be", 
+    "instance_type": "t2.medium",
+    "ssh_username": "admin",
+    "ami_name": "magma-dev-4.9.0-9"
+  }],
+  "provisioners": [
+    {
+      "type": "shell",
+      "script": "scripts/setup_grub.sh",
+      "execute_command": "sudo -S env {{.Vars}} {{.Path}}"
+    }
+  ]
+}

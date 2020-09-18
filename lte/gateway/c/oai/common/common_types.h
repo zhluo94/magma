@@ -376,4 +376,10 @@ typedef enum {
 
 struct fteid_s;
 
+//added for brokerd uTelco
+typedef struct broker_authentication_info_s {
+  uint8_t nb_of_vectors;
+  broker_vector_t broker_auth_vector[MAX_EPS_AUTH_VECTORS];
+} broker_authentication_info_t;
+
 #endif /* FILE_COMMON_TYPES_SEEN */

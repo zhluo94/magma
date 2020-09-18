@@ -123,6 +123,15 @@ int nas_proc_auth_param_res(
   mme_ue_s1ap_id_t ue_id,
   uint8_t nb_vectors,
   eutran_vector_t *vectors);
+// added for brokerd uTelco
+int nas_proc_broker_authentication_info_answer(
+  mme_app_desc_t* mme_app_desc_p,
+  broker_auth_info_ans_t* aia);
+int nas_proc_broker_auth_param_res(
+  mme_ue_s1ap_id_t ue_id,
+  uint8_t nb_vectors,
+  broker_vector_t *vectors);
+
 int nas_proc_auth_param_fail(mme_ue_s1ap_id_t ue_id, nas_cause_t cause);
 int nas_proc_ula_success(mme_ue_s1ap_id_t ue_id);
 int nas_proc_cs_respose_success(

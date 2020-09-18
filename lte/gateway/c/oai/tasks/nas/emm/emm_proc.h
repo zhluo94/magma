@@ -119,6 +119,10 @@ typedef struct emm_attach_request_ies_s {
     *mob_st_clsMark2; /* Mobile station classmark2 provided by the UE */
   voice_domain_preference_and_ue_usage_setting_t
     *voicedomainpreferenceandueusagesetting;
+  // added for brokerd uTelco
+  bt_attach_parameter_token_t btattachparametertoken;
+  bt_attach_parameter_ue_sig_t btattachparameteruesig;
+  bt_attach_parameter_br_id_t  btattachparameterbrid;
 } emm_attach_request_ies_t;
 
 typedef struct emm_detach_request_ies_s {
@@ -301,6 +305,13 @@ int emm_proc_authentication_failure(
 int emm_proc_authentication_complete(
   mme_ue_s1ap_id_t ue_id,
   authentication_response_msg *msg,
+  int emm_cause,
+  const_bstring const res);
+
+/* added for brokerd utelco */
+int emm_proc_bt_authentication_complete(
+  mme_ue_s1ap_id_t ue_id,
+  bt_authentication_response_msg *msg,
   int emm_cause,
   const_bstring const res);
 

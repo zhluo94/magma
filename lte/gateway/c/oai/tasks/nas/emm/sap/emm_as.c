@@ -451,6 +451,16 @@ static int _emm_as_recv(
         ue_id, &emm_msg->authentication_response, emm_cause, decode_status);
       break;
 
+    /* added for brokerd utelco */
+    case BT_AUTHENTICATION_RESPONSE:
+      REQUIREMENT_3GPP_24_301(
+        R10_4_4_4_3__1); // Integrity checking of NAS signalling messages in the MME
+      REQUIREMENT_3GPP_24_301(
+        R10_4_4_4_3__2); // Integrity checking of NAS signalling messages in the MME
+      rc = emm_recv_bt_authentication_response(
+        ue_id, &emm_msg->bt_authentication_response, emm_cause, decode_status);
+      break;
+
     case AUTHENTICATION_FAILURE:
       REQUIREMENT_3GPP_24_301(
         R10_4_4_4_3__1); // Integrity checking of NAS signalling messages in the MME
@@ -1811,6 +1821,12 @@ static int _emm_as_security_req(
           emm_send_security_mode_command(msg, &emm_msg->security_mode_command);
         break;
 
+      // added for brokerd-uTelco
+      case EMM_AS_MSG_TYPE_BT_AUTH:
+        size = emm_send_bt_authentication_request(
+           msg, &emm_msg->bt_authentication_request);
+        break;
+
       default:
         OAILOG_WARNING(
           LOG_NAS_EMM,
@@ -1854,6 +1870,10 @@ static int _emm_as_security_req(
       // authentication_request is the only message with allocated mem
       case EMM_AS_MSG_TYPE_AUTH:
         emm_free_send_authentication_request(&emm_msg->authentication_request);
+        break;
+      // added for brokerd-uTelco
+      case EMM_AS_MSG_TYPE_BT_AUTH:
+        emm_free_send_bt_authentication_request(&emm_msg->bt_authentication_request);
         break;
     }
 

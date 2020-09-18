@@ -1889,3 +1889,98 @@ void emm_free_send_cs_service_notification(cs_service_notification_msg *emm_msg)
   }
   OAILOG_FUNC_OUT(LOG_NAS_EMM);
 }
+
+// added for brokerd uTelco
+/****************************************************************************
+ **                                                                        **
+ ** Name:    emm_send_bt_authentication_request()                         **
+ **                                                                        **
+ ** Description: Builds BT Authentication Request message                     **
+ **                                                                        **
+ **      The BT Authentication Request message is sent by the network **
+ **      to the UE to finsh three-way authentication.  **
+ **                                                                        **
+ ** Inputs:  msg:       The EMMAS-SAP primitive to process         **
+ **      Others:    None                                       **
+ **                                                                        **
+ ** Outputs:     emm_msg:   The EMM message to be sent                 **
+ **      Return:    The size of the EMM message                **
+ **      Others:    None                                       **
+ **                                                                        **
+ ***************************************************************************/
+int emm_send_bt_authentication_request(
+  const emm_as_security_t *msg,
+  bt_authentication_request_msg *emm_msg)
+{
+  OAILOG_FUNC_IN(LOG_NAS_EMM);
+  int size = EMM_HEADER_MAXIMUM_LENGTH;
+
+  OAILOG_INFO(LOG_NAS_EMM, "EMMAS-SAP - Send BT Authentication Request message for ue_id = (%u)\n",
+    msg->ue_id);
+  /*
+   * Mandatory - Message type
+   */
+  emm_msg->messagetype = BT_AUTHENTICATION_REQUEST;
+  /*
+   * Mandatory - NAS key set identifier
+   */
+  size += NAS_KEY_SET_IDENTIFIER_MAXIMUM_LENGTH;
+  emm_msg->naskeysetidentifierasme.tsc = NAS_KEY_SET_IDENTIFIER_NATIVE;
+  emm_msg->naskeysetidentifierasme.naskeysetidentifier = msg->ksi;
+  /*
+   * Mandatory - Authentication parameter TOKEN
+   */
+  size += BT_AUTHENTICATION_PARAMETER_TOKEN_IE_MAX_LENGTH;
+  emm_msg->btauthenticationparametertoken = 
+    blk2bstr((const void *) msg->br_ue_token, BR_UE_TOKEN_SIZE ); 
+  if (!emm_msg->btauthenticationparametertoken) {
+    OAILOG_FUNC_RETURN(LOG_NAS_EMM, RETURNerror);
+  }
+  /*
+   * Mandatory - Authentication parameter BR_SIG
+   */
+  size += BT_AUTHENTICATION_PARAMETER_BR_SIG_IE_MAX_LENGTH;
+  emm_msg->btauthenticationparameterbrsig = 
+    blk2bstr((const void *) msg->br_ue_token_br_sig, BR_UE_TOKEN_BR_SIG_SIZE ); 
+  if (!emm_msg->btauthenticationparameterbrsig) {
+    OAILOG_FUNC_RETURN(LOG_NAS_EMM, RETURNerror);
+  }
+  /*
+   * Mandatory - Authentication parameter UT_SIG
+   */
+  size += BT_AUTHENTICATION_PARAMETER_UT_SIG_IE_MAX_LENGTH;
+  emm_msg->btauthenticationparameterutsig = 
+    blk2bstr((const void *) msg->br_ue_token_ut_sig, BR_UE_TOKEN_UT_SIG_SIZE ); 
+  if (!emm_msg->btauthenticationparameterutsig) {
+    OAILOG_FUNC_RETURN(LOG_NAS_EMM, RETURNerror);
+  }
+  OAILOG_FUNC_RETURN(LOG_NAS_EMM, size);
+}
+/****************************************************************************
+ **                                                                        **
+ ** Name:    emm_free_send_authentication_request()                        **
+ **                                                                        **
+ ** Description: Frees parameters of previously created authentication     **
+ **              request message                                           **
+ **      Authentication parameters in the send request message use bstring **
+ **      and need to be destroyed using this function                      **
+ **                                                                        **
+ ** Inputs:  emm_msg:       The EMM message that was sent                  **
+ **      Others:    None                                                   **
+ **                                                                        **
+ ** Outputs:  None                                                         **
+ **      Return:    None                                                   **
+ **      Others:    None                                                   **
+ **                                                                        **
+ ***************************************************************************/
+void emm_free_send_bt_authentication_request(bt_authentication_request_msg *emm_msg)
+{
+  OAILOG_FUNC_IN(LOG_NAS_EMM);
+
+  OAILOG_DEBUG(
+    LOG_NAS_EMM, "EMMAS-SAP - Freeing Send BT Authentication Request message\n");
+  bdestroy(emm_msg->btauthenticationparametertoken);
+  bdestroy(emm_msg->btauthenticationparameterbrsig);
+  bdestroy(emm_msg->btauthenticationparameterutsig);
+  OAILOG_FUNC_OUT(LOG_NAS_EMM);
+}

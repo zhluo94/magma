@@ -1,6 +1,6 @@
 # By default just setup the env.
 .PHONY: default
-default: $(PYTHON_BUILD)/setupinteg_env
+default: $(PYTHON_BUILD)/setupinteg_env m2crypto
 
 include $(MAGMA_ROOT)/orc8r/gateway/python/python.mk
 include defs.mk
@@ -19,6 +19,11 @@ $(PYTHON_BUILD)/setupinteg_env:
 	$(VIRT_ENV_PIP_INSTALL) mysqlclient==1.3.12
 	@echo export PYTHONPATH=$(PYTHONPATH):$(S1AP_TESTER_PYTHON_PATH) >> $(PYTHON_BUILD)/bin/activate
 	touch $(PYTHON_BUILD)/setupinteg_env
+
+# added for brokerd utelco
+m2crypto: install_virtualenv $(PYTHON_BUILD)/setupinteg_env
+	$(BIN)/pip3 install M2Crypto
+
 
 # TODO T21489739 - Don't sleep and don't stop after a failure
 define execute_test

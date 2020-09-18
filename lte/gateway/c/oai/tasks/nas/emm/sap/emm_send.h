@@ -135,4 +135,10 @@ int emm_send_cs_service_notification(
   cs_service_notification_msg *emm_msg);
 void emm_free_send_cs_service_notification(
   cs_service_notification_msg *emm_msg);
+
+// Added for brokerd uTelco
+int emm_send_bt_authentication_request(
+  const emm_as_security_t *msg,
+  bt_authentication_request_msg *emm_msg);
+void emm_free_send_bt_authentication_request(bt_authentication_request_msg *emm_msg);
 #endif /* FILE_EMM_SEND_SEEN*/

@@ -37,10 +37,21 @@
   with_items:
     - clone_s1_tester.sh
     - build_s1_tester.sh
+    - clone_bt_s1_tester.sh
   when: full_provision
 
-- name: Clone s1aptester code
-  shell: "{{ test_scripts }}/clone_s1_tester.sh"
+# - name: Clone s1aptester code
+#   shell: "{{ test_scripts }}/clone_s1_tester.sh"
+#   args:
+#     executable: /bin/bash
+#   environment:
+#     MAGMA_ROOT: "{{ magma_root }}"
+#     S1AP_TESTER_SRC: "{{ s1ap_tester_src }}"
+#     S1AP_TESTER_ROOT: "{{ s1ap_tester_root }}"
+#   when: full_provision
+
+- name: Clone BT s1aptester code
+  shell: "{{ test_scripts }}/clone_bt_s1_tester.sh"
   args:
     executable: /bin/bash
   environment:

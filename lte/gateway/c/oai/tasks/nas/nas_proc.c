@@ -469,6 +469,29 @@ int nas_proc_auth_param_res(
   OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
 }
 
+// added for brokerd uTelco
+int nas_proc_broker_auth_param_res(
+  mme_ue_s1ap_id_t ue_id,
+  uint8_t nb_vectors,
+  broker_vector_t *vectors)
+{
+  OAILOG_FUNC_IN(LOG_NAS_EMM);
+  int rc = RETURNerror;
+  emm_sap_t emm_sap = {0};
+  emm_cn_broker_auth_res_t emm_cn_broker_auth_res = {0};
+
+  emm_cn_broker_auth_res.ue_id = ue_id;
+  emm_cn_broker_auth_res.nb_vectors = nb_vectors;
+  for (int i = 0; i < nb_vectors; i++) {
+    emm_cn_broker_auth_res.vector[i] = &vectors[i];
+  }
+
+  emm_sap.primitive = EMMCN_BROKER_AUTHENTICATION_PARAM_RES;
+  emm_sap.u.emm_cn.u.broker_auth_res = &emm_cn_broker_auth_res;
+  rc = emm_sap_send(&emm_sap);
+  OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
+}
+
 //------------------------------------------------------------------------------
 int nas_proc_auth_param_fail(mme_ue_s1ap_id_t ue_id, nas_cause_t cause)
 {
@@ -944,5 +967,98 @@ int nas_proc_pdn_disconnect_rsp(
   emm_sap.primitive = EMMCN_PDN_DISCONNECT_RES;
   emm_sap.u.emm_cn.u.emm_cn_pdn_disconnect_rsp = emm_cn_pdn_disconnect_rsp;
   rc = emm_sap_send(&emm_sap);
+  OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
+}
+
+// Added for brokerd uTelco
+int nas_proc_broker_authentication_info_answer(
+  mme_app_desc_t* mme_app_desc_p,
+  broker_auth_info_ans_t* aia)
+{
+  imsi64_t imsi64 = INVALID_IMSI64;
+  int rc = RETURNerror;
+  emm_context_t* emm_ctxt_p = NULL;
+  ue_mm_context_t* ue_mm_context_p = NULL;
+  OAILOG_FUNC_IN(LOG_NAS_EMM);
+
+  DevAssert(aia);
+  IMSI_STRING_TO_IMSI64((char*) aia->imsi, &imsi64);
+
+  OAILOG_DEBUG(LOG_NAS_EMM, "Handling imsi " IMSI_64_FMT "\n", imsi64);
+
+  ue_mm_context_p = mme_ue_context_exists_imsi(
+    &mme_app_desc_p->mme_ue_contexts, (const hash_key_t) imsi64);
+  if (ue_mm_context_p) {
+    emm_ctxt_p = &ue_mm_context_p->emm_context;
+  }
+
+  if (!(emm_ctxt_p)) {
+    OAILOG_ERROR(
+      LOG_NAS_EMM, "That's embarrassing as we don't know this IMSI\n");
+    OAILOG_FUNC_RETURN(LOG_NAS_EMM, RETURNerror);
+  }
+
+  mme_ue_s1ap_id_t mme_ue_s1ap_id = ue_mm_context_p->mme_ue_s1ap_id;
+  OAILOG_INFO(
+    LOG_NAS_EMM,
+    "Received Broker Authentication Information Answer from S6A for"
+    " ue_id =" MME_UE_S1AP_ID_FMT "\n",
+    mme_ue_s1ap_id);
+  if (
+    (aia->result.present == S6A_RESULT_BASE) &&
+    (aia->result.choice.base == DIAMETER_SUCCESS)) {
+    /*
+      * Check that list is not empty and contain at most MAX_EPS_AUTH_VECTORS elements
+      */
+    DevCheck(
+      aia->auth_info.nb_of_vectors <= MAX_EPS_AUTH_VECTORS,
+      aia->auth_info.nb_of_vectors,
+      MAX_EPS_AUTH_VECTORS,
+      0);
+    DevCheck(
+      aia->auth_info.nb_of_vectors > 0, aia->auth_info.nb_of_vectors, 1, 0);
+
+    OAILOG_DEBUG(
+      LOG_NAS_EMM,
+      "INFORMING NAS ABOUT AUTH RESP SUCCESS got %u vector(s)\n",
+      aia->auth_info.nb_of_vectors);
+    rc = nas_proc_broker_auth_param_res(
+      mme_ue_s1ap_id,
+      aia->auth_info.nb_of_vectors,
+      aia->auth_info.broker_auth_vector);
+  } else {
+    OAILOG_ERROR(LOG_NAS_EMM, "INFORMING NAS ABOUT AUTH RESP ERROR CODE\n");
+    increment_counter(
+      "ue_attach",
+      1,
+      2,
+      "result",
+      "failure",
+      "cause",
+      "auth_info_failure_from_hss");
+    /*
+     * Inform NAS layer with the right failure
+     */
+    if (aia->result.present == S6A_RESULT_BASE) {
+      OAILOG_ERROR(
+        LOG_NAS_EMM,
+        "Auth info Rsp failure for imsi " IMSI_64_FMT ", base_error_code %d \n",
+        imsi64,
+        aia->result.choice.base);
+      rc = nas_proc_auth_param_fail(
+        mme_ue_s1ap_id, s6a_error_2_nas_cause(aia->result.choice.base, 0));
+    } else {
+      OAILOG_ERROR(
+        LOG_NAS_EMM,
+        "Auth info Rsp failure for imsi " IMSI_64_FMT
+        ", experimental_error_code %d \n",
+        imsi64,
+        aia->result.choice.experimental);
+      rc = nas_proc_auth_param_fail(
+        mme_ue_s1ap_id,
+        s6a_error_2_nas_cause(aia->result.choice.experimental, 1));
+    }
+  }
+
   OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
 }

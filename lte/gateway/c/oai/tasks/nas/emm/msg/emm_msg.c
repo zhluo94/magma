@@ -238,6 +238,17 @@ int emm_msg_decode(EMM_msg *msg, uint8_t *buffer, uint32_t len)
         &msg->authentication_response, buffer, len);
       break;
 
+    // added for uTelco
+    case BT_AUTHENTICATION_REQUEST: 
+      decode_result = decode_bt_authentication_request(
+        &msg->bt_authentication_request, buffer, len);
+      break;
+    
+    case BT_AUTHENTICATION_RESPONSE: 
+      decode_result = decode_bt_authentication_response(
+        &msg->bt_authentication_response, buffer, len);
+      break;
+
     default:
       OAILOG_ERROR(
         LOG_NAS_EMM,
@@ -440,6 +451,20 @@ int emm_msg_encode(EMM_msg *msg, uint8_t *buffer, uint32_t len)
     case UPLINK_NAS_TRANSPORT:
       encode_result =
         encode_uplink_nas_transport(&msg->uplink_nas_transport, buffer, len);
+      break;
+
+    // added for brokerd uTelco
+    case BT_AUTHENTICATION_REQUEST: 
+      OAILOG_INFO(
+        LOG_NAS_EMM,
+        "EMM-MSG  - encode BT_AUTHENTICATION_REQUEST emm message");
+      encode_result =
+        encode_bt_authentication_request(&msg->bt_authentication_request, buffer, len);
+      break;
+
+    case BT_AUTHENTICATION_RESPONSE: 
+      encode_result =
+        encode_bt_authentication_response(&msg->bt_authentication_response, buffer, len);
       break;
 
     default:

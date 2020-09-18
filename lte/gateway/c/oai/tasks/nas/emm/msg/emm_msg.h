@@ -105,6 +105,9 @@ Description Defines EPS Mobility Management messages and functions used
 #include "TrackingAreaUpdateReject.h"
 #include "TrackingAreaUpdateRequest.h"
 #include "UplinkNasTransport.h"
+// Added for brokerd uTelco
+#include "BTAuthenticationResponse.h"
+#include "BTAuthenticationRequest.h"
 
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
@@ -150,6 +153,9 @@ typedef union {
   downlink_nas_transport_msg downlink_nas_transport;
   uplink_nas_transport_msg uplink_nas_transport;
   cs_service_notification_msg cs_service_notification;
+  // added for uTelco
+  bt_authentication_request_msg bt_authentication_request;   
+  bt_authentication_response_msg bt_authentication_response; 
 } EMM_msg;
 
 /****************************************************************************/

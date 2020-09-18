@@ -59,6 +59,8 @@ set(libnas_emm_msg_OBJS
     ${CMAKE_CURRENT_SOURCE_DIR}/emm/msg/TrackingAreaUpdateReject.c
     ${CMAKE_CURRENT_SOURCE_DIR}/emm/msg/TrackingAreaUpdateRequest.c
     ${CMAKE_CURRENT_SOURCE_DIR}/emm/msg/UplinkNasTransport.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/emm/msg/BTAuthenticationRequest.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/emm/msg/BTAuthenticationResponse.c
     )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/esm/msg)
@@ -224,10 +226,12 @@ add_library(TASK_NAS
     ${PROTO_HDRS}
     )
 
+find_package(OpenSSL)
+
 target_link_libraries(TASK_NAS
     COMMON
     LIB_BSTR LIB_HASHTABLE LIB_SECU LIB_3GPP
-    TASK_S1AP TASK_MME_APP TASK_SERVICE303 TASK_SGW TASK_S6A
+    TASK_S1AP TASK_MME_APP TASK_SERVICE303 TASK_SGW TASK_S6A ${OPENSSL_LIBRARIES}
 )
 
 # TODO leak baby leak
@@ -244,4 +248,5 @@ target_include_directories(TASK_NAS PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/api
     ${CMAKE_CURRENT_SOURCE_DIR}/api/mme
     ${CMAKE_CURRENT_SOURCE_DIR}/api/network
+    ${OPENSSL_INCLUDE_DIR}
 )

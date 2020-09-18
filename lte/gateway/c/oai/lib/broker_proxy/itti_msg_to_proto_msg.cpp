@@ -68,6 +68,11 @@ convert_itti_broker_authentication_info_req_to_proto_msg(
     ret.set_resync_info(msg->resync_param, (RAND_LENGTH_OCTETS + AUTS_LENGTH));
   }
 
+  // Added for brokerd-uTelco
+  ret.set_ue_br_token(msg->ue_br_token, TOKEN_LENGTH);
+  ret.set_ue_br_token_ue_sig(msg->ue_br_token_ue_sig, UE_SIGNATURE_LENGTH);
+  ret.set_ue_br_token_ut_sig(msg->ue_br_token_ut_sig, UT_SIGNATURE_LENGTH);
+
   return ret;
 }
 

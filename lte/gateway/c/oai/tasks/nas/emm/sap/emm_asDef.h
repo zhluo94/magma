@@ -142,6 +142,12 @@ typedef struct emm_as_security_s {
 #define EMM_AS_MSG_TYPE_AUTH 0x02  /* Authentication message   */
 #define EMM_AS_MSG_TYPE_SMC 0x03   /* Security Mode Command    */
   uint8_t msg_type; /* Type of NAS security message to transfer */
+
+  // Added for brokered-uTelco
+  #define EMM_AS_MSG_TYPE_BT_AUTH 0x04   /* BT Authentication message */
+  uint8_t br_ue_token[BR_UE_TOKEN_SIZE]; 
+  uint8_t br_ue_token_br_sig[BR_UE_TOKEN_BR_SIG_SIZE];
+  uint8_t br_ue_token_ut_sig[BR_UE_TOKEN_UT_SIG_SIZE];
 } emm_as_security_t;
 
 /*

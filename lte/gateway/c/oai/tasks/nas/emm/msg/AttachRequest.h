@@ -58,7 +58,8 @@
    MOBILE_STATION_CLASSMARK_2_MAXIMUM_LENGTH +                                 \
    MOBILE_STATION_CLASSMARK_3_MAXIMUM_LENGTH +                                 \
    SUPPORTED_CODEC_LIST_MAXIMUM_LENGTH +                                       \
-   ADDITIONAL_UPDATE_TYPE_MAXIMUM_LENGTH + GUTI_TYPE_MAXIMUM_LENGTH)
+   ADDITIONAL_UPDATE_TYPE_MAXIMUM_LENGTH + GUTI_TYPE_MAXIMUM_LENGTH +          \
+   BT_ATTACH_PARAMETER_TOKEN_IE_MAX_LENGTH + BT_ATTACH_PARAMETER_UE_SIG_IE_MAX_LENGTH + BT_ATTACH_PARAMETER_BR_ID_IE_MAX_LENGTH) 
 
 /* If an optional value is present and should be encoded, the corresponding
  * Bit mask should be set to 1.
@@ -79,6 +80,10 @@
   (1 << 12)
 #define ATTACH_REQUEST_MS_NETWORK_FEATURE_SUPPORT_PRESENT (1 << 13)
 #define ATTACH_REQUEST_NETWORK_RESOURCE_IDENTIFIER_CONTAINER_PRESENT (1 << 14)
+// added for brokerd utelco
+#define ATTACH_REQUEST_BT_ATTACH_PARAMETER_TOKEN_PRESENT (1 << 15)
+#define ATTACH_REQUEST_BT_ATTACH_PARAMETER_UE_SIG_PRESENT (1 << 16)
+#define ATTACH_REQUEST_BT_ATTACH_PARAMETER_BR_ID_PRESENT (1 << 17)  
 
 typedef enum attach_request_iei_tag {
   ATTACH_REQUEST_OLD_PTMSI_SIGNATURE_IEI = GMM_PTMSI_SIGNATURE_IEI,
@@ -138,6 +143,10 @@ typedef struct attach_request_msg_tag {
     voicedomainpreferenceandueusagesetting;
   ms_network_feature_support_t msnetworkfeaturesupport;
   network_resource_identifier_container_t networkresourceidentifiercontainer;
+  // added for brokerd uTelco
+  bt_attach_parameter_token_t btattachparametertoken;
+  bt_attach_parameter_ue_sig_t btattachparameteruesig;
+  bt_attach_parameter_br_id_t btattachparameterbrid;
 } attach_request_msg;
 
 int decode_attach_request(

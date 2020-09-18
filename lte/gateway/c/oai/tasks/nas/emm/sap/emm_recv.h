@@ -181,4 +181,11 @@ int emm_recv_uplink_nas_transport(
   uplink_nas_transport_msg *msg,
   int *emm_cause,
   const nas_message_decode_status_t *status);
+
+// added for brokerd utelco
+int emm_recv_bt_authentication_response(
+  mme_ue_s1ap_id_t ue_id,
+  bt_authentication_response_msg *msg,
+  int *emm_cause,
+  const nas_message_decode_status_t *status);
 #endif /* FILE_EMM_RECV_SEEN*/

@@ -90,6 +90,9 @@
 #define CS_SERVICE_NOTIFICATION 0b01100100        /* 100 = 0x64 */
 #define DOWNLINK_GENERIC_NAS_TRANSPORT 0b01101000 /* 104 = 0x68 */
 #define UPLINK_GENERIC_NAS_TRANSPORT 0b01101001   /* 101 = 0x69 */
+// added for broker-uTelco
+#define BT_AUTHENTICATION_REQUEST 0b01110000   /* 112 = 0x70 */ 
+#define BT_AUTHENTICATION_RESPONSE 0b01110001   /* 113 = 0x71 */ 
 
 // Table 9.8.2: Message types for EPS session management
 #define ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST 0b11000001 /* 193 = 0xc1 */

@@ -366,6 +366,60 @@ int decode_attach_request(
          */
         attach_request->presencemask |=
           ATTACH_REQUEST_NETWORK_RESOURCE_IDENTIFIER_CONTAINER_PRESENT;
+        break;
+
+      // added for brokerd uTelco
+      case ATTACH_REQUEST_BT_ATTACH_PARAMETER_TOKEN_IEI:
+        if (
+          (decoded_result = decode_bt_attach_parameter_token_ie(
+             &attach_request->btattachparametertoken,
+             ATTACH_REQUEST_BT_ATTACH_PARAMETER_TOKEN_IEI,
+             buffer + decoded,
+             len - decoded)) <= 0) {
+          //         return decoded_result;
+          OAILOG_FUNC_RETURN(LOG_NAS_EMM, decoded_result);
+        }
+
+        decoded += decoded_result;
+        /* Set corresponding mask to 1 in presencemask */
+        attach_request->presencemask |=
+          ATTACH_REQUEST_BT_ATTACH_PARAMETER_TOKEN_PRESENT;
+        break;
+
+      case ATTACH_REQUEST_BT_ATTACH_PARAMETER_UE_SIG_IEI:
+        if (
+          (decoded_result = decode_bt_attach_parameter_ue_sig_ie(
+             &attach_request->btattachparameteruesig,
+             ATTACH_REQUEST_BT_ATTACH_PARAMETER_UE_SIG_IEI,
+             buffer + decoded,
+             len - decoded)) <= 0) {
+          //         return decoded_result;
+          OAILOG_FUNC_RETURN(LOG_NAS_EMM, decoded_result);
+        }
+
+        decoded += decoded_result;
+        /* Set corresponding mask to 1 in presencemask */
+        attach_request->presencemask |=
+          ATTACH_REQUEST_BT_ATTACH_PARAMETER_UE_SIG_PRESENT;
+        break;
+
+      case ATTACH_REQUEST_BT_ATTACH_PARAMETER_BR_ID_IEI:
+        if (
+          (decoded_result = decode_bt_attach_parameter_br_id_ie(
+             &attach_request->btattachparameterbrid,
+             ATTACH_REQUEST_BT_ATTACH_PARAMETER_BR_ID_IEI,
+             buffer + decoded,
+             len - decoded)) <= 0) {
+          //         return decoded_result;
+          OAILOG_FUNC_RETURN(LOG_NAS_EMM, decoded_result);
+        }
+
+        decoded += decoded_result;
+        /* Set corresponding mask to 1 in presencemask */
+        attach_request->presencemask |=
+          ATTACH_REQUEST_BT_ATTACH_PARAMETER_BR_ID_PRESENT;
+        break;
+
 	break;
 
       default:
@@ -638,6 +692,55 @@ int encode_attach_request(
       (encode_result = encode_ms_network_feature_support_ie(
          &attach_request->msnetworkfeaturesupport,
          ATTACH_REQUEST_MS_NETWORK_FEATURE_SUPPORT_IEI,
+         buffer + encoded,
+         len - encoded)) < 0)
+      // Return in case of error
+      return encode_result;
+    else
+      encoded += encode_result;
+  }
+
+  // added for brokerd utelco
+  if (
+    (attach_request->presencemask &
+     ATTACH_REQUEST_BT_ATTACH_PARAMETER_TOKEN_PRESENT) ==
+    ATTACH_REQUEST_BT_ATTACH_PARAMETER_TOKEN_PRESENT) {
+    if (
+      (encode_result = encode_bt_attach_parameter_token_ie(
+         attach_request->btattachparametertoken,
+         ATTACH_REQUEST_BT_ATTACH_PARAMETER_TOKEN_IEI,
+         buffer + encoded,
+         len - encoded)) < 0)
+      // Return in case of error
+      return encode_result;
+    else
+      encoded += encode_result;
+  }
+
+  if (
+    (attach_request->presencemask &
+     ATTACH_REQUEST_BT_ATTACH_PARAMETER_UE_SIG_PRESENT) ==
+    ATTACH_REQUEST_BT_ATTACH_PARAMETER_UE_SIG_PRESENT) {
+    if (
+      (encode_result = encode_bt_attach_parameter_ue_sig_ie(
+         attach_request->btattachparameteruesig,
+         ATTACH_REQUEST_BT_ATTACH_PARAMETER_UE_SIG_IEI,
+         buffer + encoded,
+         len - encoded)) < 0)
+      // Return in case of error
+      return encode_result;
+    else
+      encoded += encode_result;
+  }
+
+  if (
+    (attach_request->presencemask &
+     ATTACH_REQUEST_BT_ATTACH_PARAMETER_BR_ID_PRESENT) ==
+    ATTACH_REQUEST_BT_ATTACH_PARAMETER_BR_ID_PRESENT) {
+    if (
+      (encode_result = encode_bt_attach_parameter_br_id_ie(
+         attach_request->btattachparameterbrid,
+         ATTACH_REQUEST_BT_ATTACH_PARAMETER_BR_ID_IEI,
          buffer + encoded,
          len - encoded)) < 0)
       // Return in case of error

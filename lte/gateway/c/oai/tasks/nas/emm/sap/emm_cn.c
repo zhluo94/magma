@@ -104,6 +104,8 @@ static int _emm_cn_authentication_res(emm_cn_auth_res_t *const msg);
 static int _emm_cn_authentication_fail(const emm_cn_auth_fail_t *msg);
 static int _emm_cn_ula_success(emm_cn_ula_success_t *msg_pP);
 static int _emm_cn_cs_response_success(emm_cn_cs_response_success_t *msg_pP);
+// added for brokerd utelco
+static int _emm_cn_broker_authentication_res(emm_cn_broker_auth_res_t *const msg);
 
 /*
    String representation of EMMCN-SAP primitives
@@ -123,6 +125,8 @@ static const char *_emm_cn_primitive_str[] = {
   "EMMCN_MM_INFORMATION_REQUEST",
   "EMMCN_DEACTIVATE_BEARER_REQ",
   "EMMCN_PDN_DISCONNECT_RES",
+  // added for brokerd utelco
+  "EMMCN_BROKER_AUTHENTICATION_PARAM_RES",
 };
 
 //------------------------------------------------------------------------------
@@ -150,6 +154,43 @@ static int _emm_cn_authentication_res(emm_cn_auth_res_t *const msg)
       }
       auth_info_proc->nb_vectors = msg->nb_vectors;
       rc = (*auth_info_proc->success_notif)(emm_ctx);
+    } else {
+      OAILOG_ERROR(
+        LOG_NAS_EMM,
+        "EMM-PROC  - "
+        "Failed to find Auth_info procedure associated to UE "
+        "id " MME_UE_S1AP_ID_FMT "...\n",
+        msg->ue_id);
+    }
+  }
+  OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
+}
+
+// added for brokerd uTelco
+static int _emm_cn_broker_authentication_res(emm_cn_broker_auth_res_t *const msg)
+{
+  OAILOG_FUNC_IN(LOG_NAS_EMM);
+  emm_context_t *emm_ctx = NULL;
+  int rc = RETURNerror;
+
+  /*
+   * We received security vector from HSS. Try to setup security with UE
+   */
+  ue_mm_context_t* ue_mm_context =
+    mme_ue_context_exists_mme_ue_s1ap_id(msg->ue_id);
+
+  if (ue_mm_context) {
+    emm_ctx = &ue_mm_context->emm_context;
+    nas_auth_info_proc_t *auth_info_proc =
+      get_nas_cn_procedure_auth_info(emm_ctx);
+
+    if (auth_info_proc) {
+      for (int i = 0; i < msg->nb_vectors; i++) {
+        auth_info_proc->broker_vector[i] = msg->vector[i];
+        msg->vector[i] = NULL;
+      }
+      auth_info_proc->nb_vectors = msg->nb_vectors;
+      rc = (*auth_info_proc->broker_success_notif)(emm_ctx);
     } else {
       OAILOG_ERROR(
         LOG_NAS_EMM,
@@ -1221,6 +1262,11 @@ int emm_cn_send(const emm_cn_t *msg)
 
     case _EMMCN_AUTHENTICATION_PARAM_FAIL:
       rc = _emm_cn_authentication_fail(msg->u.auth_fail);
+      break;
+    
+    // added for brokerd utelco
+    case _EMMCN_BROKER_AUTHENTICATION_PARAM_RES:
+      rc = _emm_cn_broker_authentication_res(msg->u.broker_auth_res);
       break;
 
     case EMMCN_ULA_SUCCESS:

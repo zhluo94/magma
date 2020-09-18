@@ -218,6 +218,11 @@ typedef struct nas_emm_auth_proc_s {
   uint8_t autn[AUTH_AUTN_SIZE]; /* Authentication token     */
   imsi_t *unchecked_imsi;
   int emm_cause;
+  // added for brokerd uTelco
+  uint8_t br_ue_token[BR_UE_TOKEN_SIZE];
+  uint8_t br_ue_token_br_sig[BR_UE_TOKEN_BR_SIG_SIZE];
+  uint8_t br_ue_token_ut_sig[BR_UE_TOKEN_UT_SIG_SIZE];
+  bool is_broker;
 } nas_emm_auth_proc_t;
 
 typedef struct nas_emm_smc_proc_s {
@@ -329,10 +334,16 @@ typedef struct nas_cn_proc_s {
 typedef struct nas_auth_info_proc_s {
   nas_cn_proc_t cn_proc;
   success_cb_t success_notif;
+  // Added for brokerd uTelco
+  success_cb_t broker_success_notif;
+
   failure_cb_t failure_notif;
   bool request_sent;
   uint8_t nb_vectors;
   eutran_vector_t *vector[MAX_EPS_AUTH_VECTORS];
+  // Added for brokerd uTelco
+  broker_vector_t *broker_vector[MAX_EPS_AUTH_VECTORS];
+
   int nas_cause;
   struct nas_timer_s timer_s6a;
   mme_ue_s1ap_id_t ue_id;

@@ -110,10 +110,11 @@ void *s6a_thread(void *args)
     DevAssert(received_message_p);
 
     switch (ITTI_MSG_ID(received_message_p)) {
+      // Added for brokerd uTelco
       case BROKER_AUTH_INFO_REQ: {
          rc = broker_authentication_info_req(&received_message_p->ittiMsg.broker_auth_info_req);
          if (rc) {
-          OAILOG_DEBUG(
+          OAILOG_INFO(
             LOG_S6A,
             "Sending broker AIR for imsi=%s\n",
             received_message_p->ittiMsg.broker_auth_info_req.imsi);

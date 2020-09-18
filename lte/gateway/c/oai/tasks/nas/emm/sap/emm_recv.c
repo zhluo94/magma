@@ -391,6 +391,16 @@ int emm_recv_attach_request(
       sizeof(voice_domain_preference_and_ue_usage_setting_t));
   }
 
+  // added for brokerd uTelco
+  if (msg->presencemask & ATTACH_REQUEST_BT_ATTACH_PARAMETER_TOKEN_PRESENT) {
+    params->btattachparametertoken = msg->btattachparametertoken;
+  }
+  if (msg->presencemask & ATTACH_REQUEST_BT_ATTACH_PARAMETER_UE_SIG_PRESENT) {
+    params->btattachparameteruesig = msg->btattachparameteruesig;
+  }
+  if (msg->presencemask & ATTACH_REQUEST_BT_ATTACH_PARAMETER_BR_ID_PRESENT) {
+    params->btattachparameterbrid  = msg->btattachparameterbrid;
+  }
   /*
    * Execute the requested UE attach procedure
    */
@@ -1310,5 +1320,64 @@ int emm_recv_uplink_nas_transport(
    * Execute the uplink nas transport procedure completion
    */
   rc = emm_proc_uplink_nas_transport(ue_id, msg->nasmessagecontainer);
+  OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
+}
+
+// added for brokerd utelco
+/****************************************************************************
+ **                                                                        **
+ ** Name:    emm_recv_bt_authentication_response()                        **
+ **                                                                        **
+ ** Description: Processes BT Authentication Response message                 **
+ **                                                                        **
+ ** Inputs:  ue_id:      UE lower layer identifier                  **
+ **      msg:       The received EMM message                   **
+ **      Others:    None                                       **
+ **                                                                        **
+ ** Outputs:     emm_cause: EMM cause code                             **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
+ **                                                                        **
+ ***************************************************************************/
+int emm_recv_bt_authentication_response(
+  mme_ue_s1ap_id_t ue_id,
+  bt_authentication_response_msg *msg,
+  int *emm_cause,
+  const nas_message_decode_status_t *status)
+{
+  OAILOG_FUNC_IN(LOG_NAS_EMM);
+  int rc = RETURNok;
+
+  OAILOG_INFO(
+    LOG_NAS_EMM, "EMMAS-SAP - Received BT Authentication Response message\n");
+
+  /*
+   * Message checking
+   */
+  if (
+    (NULL == msg->btauthenticationresponseparameter) ||
+    (!blength(msg->btauthenticationresponseparameter))) {
+    /*
+     * RES parameter shall not be null
+     */
+    *emm_cause = EMM_CAUSE_INVALID_MANDATORY_INFO;
+  }
+
+  /*
+   * Handle message checking error
+   */
+  if (*emm_cause != EMM_CAUSE_SUCCESS) {
+    OAILOG_FUNC_RETURN(LOG_NAS_EMM, RETURNerror);
+  }
+
+  /*
+   * Execute the authentication completion procedure
+   */
+  rc = emm_proc_bt_authentication_complete(
+    ue_id, msg, EMM_CAUSE_SUCCESS, msg->btauthenticationresponseparameter);
+  /*
+   * Free btauthenticationresponseparameter IE
+   */
+  bdestroy(msg->btauthenticationresponseparameter);
   OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
 }

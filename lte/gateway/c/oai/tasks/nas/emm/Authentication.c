@@ -96,6 +96,9 @@ static int _start_authentication_information_procedure(
   const_bstring auts);
 static int _auth_info_proc_success_cb(struct emm_context_s *emm_ctx);
 static int _auth_info_proc_failure_cb(struct emm_context_s *emm_ctx);
+// added for brokerd utelco
+static int _broker_auth_info_proc_success_cb(struct emm_context_s *emm_ctx);
+
 
 static int _authentication_check_imsi_5_4_2_5__1(
   struct emm_context_s *emm_context);
@@ -115,6 +118,20 @@ static void _nas_itti_auth_info_req(
   plmn_t* const visited_plmnP,
   const uint8_t num_vectorsP,
   const_bstring const auts_pP);
+
+// added for brokerd utelco
+static void _nas_itti_broker_auth_info_req(
+  const mme_ue_s1ap_id_t ue_id,
+  const imsi_t* const imsiP,
+  const bool is_initial_reqP,
+  plmn_t* const visited_plmnP,
+  const uint8_t num_vectorsP,
+  const_bstring const auts_pP,
+  const_bstring const token,
+  const_bstring const ue_sig,
+  const_bstring const br_id,
+  EC_KEY* ut_private_ecdsa,
+  RSA* ut_private_rsa);
 
 static void _s6a_auth_info_rsp_timer_expiry_handler(void *args);
 
@@ -378,6 +395,9 @@ static int _start_authentication_information_procedure(
     &auth_info_proc->cn_proc.base_proc;
   auth_info_proc->success_notif = _auth_info_proc_success_cb;
   auth_info_proc->failure_notif = _auth_info_proc_failure_cb;
+  //added for brokerd uTelco
+  auth_info_proc->broker_success_notif = _broker_auth_info_proc_success_cb;
+
   auth_info_proc->cn_proc.base_proc.time_out =
     _s6a_auth_info_rsp_timer_expiry_handler;
   auth_info_proc->ue_id = ue_id;
@@ -399,13 +419,41 @@ static int _start_authentication_information_procedure(
     auth_info_proc->cn_proc.base_proc.time_out,
     emm_context);
 
-  _nas_itti_auth_info_req(
+  //modified for brokerd uTelco
+  // _nas_itti_auth_info_req(
+  //   ue_id,
+  //   &emm_context->_imsi,
+  //   is_initial_req,
+  //   &visited_plmn,
+  //   MAX_EPS_AUTH_VECTORS,
+  //   auts);
+  
+  // added for brokerd utelco
+  nas_emm_attach_proc_t *attach_proc = get_nas_specific_procedure_attach(emm_context);
+  if(attach_proc && attach_proc->ies->btattachparametertoken && attach_proc->ies->btattachparameteruesig && attach_proc->ies->btattachparameterbrid) {
+    OAILOG_INFO(LOG_NAS_EMM, "Initiate brokerd-uTelco authentication\n");
+    _nas_itti_broker_auth_info_req(
+    ue_id,
+    &emm_context->_imsi,
+    is_initial_req,
+    &visited_plmn,
+    MAX_EPS_AUTH_VECTORS,
+    auts,
+    attach_proc->ies->btattachparametertoken,
+    attach_proc->ies->btattachparameteruesig,
+    attach_proc->ies->btattachparameterbrid,
+    emm_context->ut_private_ecdsa,
+    emm_context->ut_private_rsa);
+  } else {
+    OAILOG_INFO(LOG_NAS_EMM, "Initiate standard authentication\n");
+    _nas_itti_auth_info_req(
     ue_id,
     &emm_context->_imsi,
     is_initial_req,
     &visited_plmn,
     MAX_EPS_AUTH_VECTORS,
     auts);
+  }
 
   OAILOG_FUNC_RETURN(LOG_NAS_EMM, RETURNok);
 }
@@ -1049,6 +1097,152 @@ int emm_proc_authentication_complete(
   OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
 }
 
+// added for brokerd utelco
+/****************************************************************************
+ **                                                                        **
+ ** Name:    emm_proc_bt_authentication_complete()                            **
+ **                                                                        **
+ ** Description: Performs the authentication completion procedure executed **
+ **      by the network.                                                   **
+ **                                                                        **
+ **              3GPP TS 24.301, section 5.4.2.4                           **
+ **      Upon receiving the AUTHENTICATION RESPONSE message, the           **
+ **      MME shall stop timer T3460 and check the correctness of           **
+ **      the RES parameter.                                                **
+ **                                                                        **
+ ** Inputs:  ue_id:      UE lower layer identifier                          **
+ **      emm_cause: Authentication failure EMM cause code                  **
+ **      res:       Authentication response parameter. or auts             **
+ **                 in case of sync failure                                **
+ **      Others:    None                                                   **
+ **                                                                        **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                                  **
+ **      Others:    _emm_data, T3460                                       **
+ **                                                                        **
+ ***************************************************************************/
+int emm_proc_bt_authentication_complete(
+  mme_ue_s1ap_id_t ue_id,
+  bt_authentication_response_msg *msg,
+  int emm_cause,
+  const_bstring const res)
+{
+  OAILOG_FUNC_IN(LOG_NAS_EMM);
+  int rc = RETURNerror;
+  bool is_val_fail = false;
+  OAILOG_INFO(
+    LOG_NAS_EMM,
+    "EMM-PROC  - BT Authentication complete (ue_id=" MME_UE_S1AP_ID_FMT ")\n",
+    ue_id);
+
+  // Get the UE context
+  ue_mm_context_t *ue_mm_context = mme_ue_context_exists_mme_ue_s1ap_id(ue_id);
+  emm_context_t *emm_ctx = NULL;
+
+  if (!ue_mm_context) {
+    OAILOG_WARNING(
+      LOG_NAS_EMM,
+      "EMM-PROC  - Failed to authenticate the UE due to NULL ue_mm_context\n");
+    OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
+  }
+
+  emm_ctx = &ue_mm_context->emm_context;
+  nas_emm_auth_proc_t *auth_proc =
+    get_nas_common_procedure_authentication(emm_ctx);
+
+  if (auth_proc) {
+    // Stop timer T3460
+    REQUIREMENT_3GPP_24_301(R10_5_4_2_4__1);
+    void *callback_arg = NULL;
+    nas_stop_T3460(ue_id, &auth_proc->T3460, callback_arg);
+    REQUIREMENT_3GPP_24_301(R10_5_4_2_4__2);
+    emm_ctx_set_security_eksi(emm_ctx, auth_proc->ksi);
+
+    // for (idx = 0; idx < emm_ctx->_vector[auth_proc->ksi].xres_size; idx++) {
+    //   if (
+    //     (emm_ctx->_vector[auth_proc->ksi].xres[idx]) !=
+    //     msg->authenticationresponseparameter->data[idx]) {
+    //     is_val_fail = true;
+    //     break;
+    //   }
+    // }
+    if(blength(msg->btauthenticationresponseparameter) != 1 ||  msg->btauthenticationresponseparameter->data[0] == false)
+      is_val_fail = true;
+
+    if (is_val_fail == true) {
+      OAILOG_WARNING(
+        LOG_NAS_EMM,
+        "XRES/RES Validation Failed for (ue_id=" MME_UE_S1AP_ID_FMT ")\n",
+        ue_id);
+      if (!IS_EMM_CTXT_PRESENT_IMSI(
+            emm_ctx)) { // VALID means received in IDENTITY RESPONSE
+        REQUIREMENT_3GPP_24_301(R10_5_4_2_7_c__2);
+        rc = emm_proc_identification(
+          emm_ctx,
+          &auth_proc->emm_com_proc.emm_proc,
+          IDENTITY_TYPE_2_IMSI,
+          _authentication_check_imsi_5_4_2_5__1,
+          _authentication_check_imsi_5_4_2_5__1_fail);
+
+        if (rc != RETURNok) {
+          REQUIREMENT_3GPP_24_301(
+            R10_5_4_2_7_c__NOTE1); // more or less this case...
+          // Failed to initiate the identification procedure
+          emm_ctx->emm_cause = EMM_CAUSE_ILLEGAL_UE;
+          // Do not accept the UE to attach to the network
+          rc = _authentication_reject(emm_ctx, (nas_base_proc_t *) auth_proc);
+        }
+      } else {
+        REQUIREMENT_3GPP_24_301(R10_5_4_2_5__2);
+        emm_ctx->emm_cause = EMM_CAUSE_ILLEGAL_UE;
+        OAILOG_ERROR(
+          LOG_NAS_EMM,
+          "ue_id=" MME_UE_S1AP_ID_FMT "Auth Failed. XRES is not equal to RES\n",
+          auth_proc->ue_id);
+        increment_counter(
+          "authentication_failure", 1, 1, "cause", "xres_validation_failed");
+        increment_counter(
+          "ue_attach",
+          1,
+          2,
+          "result",
+          "failure",
+          "cause",
+          "authentication_xres_validation_failed");
+        // Do not accept the UE to attach to the network
+        rc = _authentication_reject(emm_ctx, (nas_base_proc_t *) auth_proc);
+      }
+      OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
+    }
+
+    OAILOG_INFO(
+      LOG_NAS_EMM,
+      "EMM-PROC  - Successful BT authentication of the UE RESP true indicator\n");
+
+    /*
+   * Notify EMM that the authentication procedure successfully completed
+   */
+    OAILOG_INFO(
+      LOG_NAS_EMM,
+      "EMM-PROC  - Notify EMM that the BT authentication procedure successfully "
+      "completed\n");
+    emm_sap_t emm_sap = {0};
+    emm_sap.primitive = EMMREG_COMMON_PROC_CNF;
+    emm_sap.u.emm_reg.ue_id = ue_id;
+    emm_sap.u.emm_reg.ctx = emm_ctx;
+
+    emm_sap.u.emm_reg.notify = true;
+    emm_sap.u.emm_reg.free_proc = true;
+    emm_sap.u.emm_reg.u.common.common_proc = &auth_proc->emm_com_proc;
+    emm_sap.u.emm_reg.u.common.previous_emm_fsm_state =
+      auth_proc->emm_com_proc.emm_proc.previous_emm_fsm_state;
+    rc = emm_sap_send(&emm_sap);
+  } else {
+    OAILOG_ERROR(LOG_NAS_EMM, "Auth proc is null");
+  }
+  OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
+}
+
 /**
  * When the NAS authentication procedures are restored from data store, the
  * references to callback functions need to be re-populated with the local
@@ -1061,6 +1255,9 @@ void set_callbacks_for_auth_info_proc(nas_auth_info_proc_t *auth_info_proc)
 {
   auth_info_proc->success_notif = _auth_info_proc_success_cb;
   auth_info_proc->failure_notif = _auth_info_proc_failure_cb;
+  //added for brokerd uTelco
+  auth_info_proc->broker_success_notif = _broker_auth_info_proc_success_cb;
+
   auth_info_proc->cn_proc.base_proc.time_out =
     _s6a_auth_info_rsp_timer_expiry_handler;
 }
@@ -1311,10 +1508,19 @@ static int _authentication_request(
       auth_proc->emm_com_proc.emm_proc.base_proc.nas_puid;
     emm_sap.u.emm_as.u.security.guti = NULL;
     emm_sap.u.emm_as.u.security.ue_id = auth_proc->ue_id;
-    emm_sap.u.emm_as.u.security.msg_type = EMM_AS_MSG_TYPE_AUTH;
     emm_sap.u.emm_as.u.security.ksi = auth_proc->ksi;
-    memcpy(emm_sap.u.emm_as.u.security.rand, auth_proc->rand, AUTH_RAND_SIZE);
-    memcpy(emm_sap.u.emm_as.u.security.autn, auth_proc->autn, AUTH_AUTN_SIZE);
+    if (auth_proc->is_broker) {
+      // added for brokerd uTelco
+      emm_sap.u.emm_as.u.security.msg_type = EMM_AS_MSG_TYPE_BT_AUTH;
+      memcpy(emm_sap.u.emm_as.u.security.br_ue_token, auth_proc->br_ue_token, BR_UE_TOKEN_SIZE);
+      memcpy(emm_sap.u.emm_as.u.security.br_ue_token_br_sig, auth_proc->br_ue_token_br_sig, BR_UE_TOKEN_BR_SIG_SIZE);
+      memcpy(emm_sap.u.emm_as.u.security.br_ue_token_ut_sig, auth_proc->br_ue_token_ut_sig, BR_UE_TOKEN_UT_SIG_SIZE);
+    }
+    else {
+      emm_sap.u.emm_as.u.security.msg_type = EMM_AS_MSG_TYPE_AUTH;
+      memcpy(emm_sap.u.emm_as.u.security.rand, auth_proc->rand, AUTH_RAND_SIZE);
+      memcpy(emm_sap.u.emm_as.u.security.autn, auth_proc->autn, AUTH_AUTN_SIZE);
+    }
 
     /*
      * Setup EPS NAS security data
@@ -1568,6 +1774,7 @@ static void _nas_itti_auth_info_req(
     ue_id);
 
   message_p = itti_alloc_new_message(TASK_MME_APP, S6A_AUTH_INFO_REQ);
+
   if (!message_p) {
     OAILOG_CRITICAL(
       LOG_NAS_EMM,
@@ -1608,6 +1815,124 @@ static void _nas_itti_auth_info_req(
   itti_send_msg_to_task(TASK_S6A, INSTANCE_DEFAULT, message_p);
   OAILOG_FUNC_OUT(LOG_NAS);
 }
+
+// added for brokerd utelco
+/****************************************************************************
+ **                                                                        **
+ ** Name:    _nas_itti_broker_auth_info_req()                                     **
+ **                                                                        **
+ ** Description: Sends Broker Authenticatio Req to HSS via S6a Task               **
+ **                                                                        **
+ ** Inputs: ue_idP: UE context Identifier                                  **
+ **      imsiP: IMSI of UE                                                 **
+ **      is_initial_reqP: Flag to indicate, whether Auth Req is sent       **
+ **                      for first time or initited as part of             **
+ **                      re-synchronisation                                **
+ **      visited_plmnP : Visited PLMN                                      **
+ **      num_vectorsP : Number of Auth vectors in case of                  **
+ **                    re-synchronisation                                  **
+ **      auts_pP : sent in case of re-synchronisation                      **
+ ** Outputs:                                                               **
+ **     Return: None                                                       **
+ **                                                                        **
+ ***************************************************************************/
+static void _nas_itti_broker_auth_info_req(
+  const mme_ue_s1ap_id_t ue_id,
+  const imsi_t* const imsiP,
+  const bool is_initial_reqP,
+  plmn_t* const visited_plmnP,
+  const uint8_t num_vectorsP,
+  const_bstring const auts_pP,
+  const_bstring const ue_br_token,
+  const_bstring const ue_br_token_ue_sig,
+  const_bstring const br_id,
+  EC_KEY  * ut_private_ecdsa,
+  RSA* ut_private_rsa)
+{
+  OAILOG_FUNC_IN(LOG_NAS);
+
+  OAILOG_INFO(LOG_NAS_EMM,"EMM-PROC  - decode the BR Id\n");
+  uint8_t plain_br_id[BR_ID_SIZE + NONCE_SIZE];  
+  RSA_private_decrypt(BR_UT_TOKEN_SIZE, (unsigned char *)br_id->data, (unsigned char *)plain_br_id, ut_private_rsa, RSA_PKCS1_PADDING);  
+
+  if(plain_br_id[0] != 0) {
+    OAILOG_CRITICAL(
+      LOG_NAS_EMM,
+      "Extracted a wrong broker id %d\n", plain_br_id[0]);
+    OAILOG_FUNC_OUT(LOG_NAS);
+  }
+
+  MessageDef* message_p = NULL;
+  broker_auth_info_req_t* auth_info_req = NULL;
+
+  OAILOG_INFO(
+    LOG_NAS_EMM,
+    "Sending Broker Authentication Information Request message to S6A"
+    " for ue_id =" MME_UE_S1AP_ID_FMT "\n",
+    ue_id);
+
+  message_p = itti_alloc_new_message(TASK_MME_APP, BROKER_AUTH_INFO_REQ);
+
+  if (!message_p) {
+    OAILOG_CRITICAL(
+      LOG_NAS_EMM,
+      "itti_alloc_new_message failed for Broker Authentication"
+      " Information Request message to S6A for"
+      " ue-id = " MME_UE_S1AP_ID_FMT "\n",
+      ue_id);
+    OAILOG_FUNC_OUT(LOG_NAS);
+  }
+  auth_info_req = &message_p->ittiMsg.broker_auth_info_req;
+  memset(auth_info_req, 0, sizeof(broker_auth_info_req_t));
+
+  IMSI_TO_STRING(imsiP, auth_info_req->imsi, IMSI_BCD_DIGITS_MAX + 1);
+  auth_info_req->imsi_length = (uint8_t) strlen(auth_info_req->imsi);
+
+  if (!(auth_info_req->imsi_length > 5) && (auth_info_req->imsi_length < 16)) {
+    OAILOG_WARNING(
+      LOG_NAS_EMM, "Bad IMSI length %d", auth_info_req->imsi_length);
+    OAILOG_FUNC_OUT(LOG_NAS);
+  }
+  auth_info_req->visited_plmn = *visited_plmnP;
+  auth_info_req->nb_of_vectors = num_vectorsP;
+
+  if (is_initial_reqP) {
+    auth_info_req->re_synchronization = 0;
+    memset(auth_info_req->resync_param, 0, sizeof auth_info_req->resync_param);
+  } else {
+    if (!auts_pP) {
+      OAILOG_WARNING(LOG_NAS_EMM, "Auts Null during resynchronization \n");
+      OAILOG_FUNC_OUT(LOG_NAS);
+    }
+    auth_info_req->re_synchronization = 1;
+    memcpy(
+      auth_info_req->resync_param,
+      auts_pP->data,
+      sizeof auth_info_req->resync_param);
+  }
+  int token_length = blength(ue_br_token);
+  int ue_sig_length = blength(ue_br_token_ue_sig);
+  if(token_length != TOKEN_LENGTH || ue_sig_length > UE_SIGNATURE_LENGTH) {
+    OAILOG_WARNING(LOG_NAS_EMM, "Bad Token length %d or Bad UE signature length %d \n", token_length, ue_sig_length);
+    OAILOG_FUNC_OUT(LOG_NAS);
+  }
+  memcpy(auth_info_req->ue_br_token, ue_br_token->data, token_length);
+  memcpy(auth_info_req->ue_br_token_ue_sig, ue_br_token_ue_sig->data, ue_sig_length);
+
+  uint8_t payload[TOKEN_LENGTH + UE_SIGNATURE_LENGTH];
+  memcpy(payload, ue_br_token->data, token_length);
+  memcpy(payload + token_length, ue_br_token_ue_sig->data, ue_sig_length);
+  uint8_t ue_br_token_ut_sig[UT_SIGNATURE_LENGTH];
+  unsigned int sig_length;
+  uint8_t digest[SHA_DIGEST_LENGTH];
+  SHA1(payload, token_length + ue_sig_length, digest);
+  ECDSA_sign(NID_sha1, digest, SHA_DIGEST_LENGTH, (unsigned char*) ue_br_token_ut_sig, &sig_length, ut_private_ecdsa);
+  memcpy(auth_info_req->ue_br_token_ut_sig, ue_br_token_ut_sig, sig_length);
+
+  itti_send_msg_to_task(TASK_S6A, INSTANCE_DEFAULT, message_p);
+  OAILOG_FUNC_OUT(LOG_NAS);
+}
+
 
 /************************************************************************
  **                                                                    **
@@ -1663,4 +1988,309 @@ static void _s6a_auth_info_rsp_timer_expiry_handler(void* args)
       "UE \n");
   }
   OAILOG_FUNC_OUT(LOG_NAS_EMM);
+}
+
+//------------------------------------------------------------------------------
+// added for broked uTelco
+
+// static int _find_broker_id(uint8_t plain_token[BR_UT_PLAIN_TOKEN_SIZE]) 
+// {
+//   return (int)plain_token[0];
+// }
+static int _get_sig_len(uint8_t br_ut_token_br_sig[BR_UT_TOKEN_BR_SIG_SIZE])
+{
+  return (int)br_ut_token_br_sig[1] + 2;
+}
+static int _verify_br_ut_token(uint8_t br_ut_token[BR_UT_TOKEN_SIZE], uint8_t br_ut_token_br_sig[BR_UT_TOKEN_BR_SIG_SIZE], RSA* ut_private_rsa, int br_id, EC_KEY* br_public_ecdsa)
+{
+  uint8_t plain_token[BR_UT_PLAIN_TOKEN_SIZE];  
+  RSA_private_decrypt(BR_UT_TOKEN_SIZE, (unsigned char *)br_ut_token, (unsigned char *)plain_token, ut_private_rsa, RSA_PKCS1_PADDING);  
+  //int broker_id = _find_broker_id(plain_token);
+  uint8_t digest[SHA_DIGEST_LENGTH];
+  SHA1(br_ut_token, BR_UT_TOKEN_SIZE, digest);
+  if(ECDSA_verify(NID_sha1, digest, SHA_DIGEST_LENGTH, (unsigned char *)br_ut_token_br_sig, _get_sig_len(br_ut_token_br_sig), br_public_ecdsa) == 1)
+    return RETURNok;
+  return RETURNerror;
+}
+// added for brokerd-uTelco
+int emm_proc_broker_authentication_ksi(
+  struct emm_context_s *emm_context,
+  nas_emm_specific_proc_t *const emm_specific_proc,
+  ksi_t ksi,
+  const uint8_t *const br_ue_token,
+  const uint8_t *const br_ue_token_br_sig,
+  EC_KEY  * ut_private_ecdsa,
+  success_cb_t success,
+  failure_cb_t failure)
+{
+  OAILOG_FUNC_IN(LOG_NAS_EMM);
+  int rc = RETURNerror;
+
+  if (
+    (emm_context) && ((EMM_DEREGISTERED == emm_context->_emm_fsm_state) ||
+                      (EMM_REGISTERED == emm_context->_emm_fsm_state))) {
+    mme_ue_s1ap_id_t ue_id =
+      PARENT_STRUCT(emm_context, struct ue_mm_context_s, emm_context)
+        ->mme_ue_s1ap_id;
+    OAILOG_INFO(
+      LOG_NAS_EMM,
+      "ue_id=" MME_UE_S1AP_ID_FMT
+      " EMM-PROC  - Initiate Broker Authentication KSI = %d\n",
+      ue_id,
+      ksi);
+
+    nas_emm_auth_proc_t *auth_proc =
+      get_nas_common_procedure_authentication(emm_context);
+    if (!auth_proc) {
+      auth_proc = nas_new_authentication_procedure(emm_context);
+    }
+
+    if (auth_proc) {
+      if (emm_specific_proc) {
+        if (EMM_SPEC_PROC_TYPE_ATTACH == emm_specific_proc->type) {
+          auth_proc->is_cause_is_attach = true;
+          OAILOG_DEBUG(
+            LOG_NAS_EMM,
+            "Auth proc cause is EMM_SPEC_PROC_TYPE_ATTACH (%d) for ue_id (%u)\n",
+            emm_specific_proc->type,
+            ue_id);
+        } else if (EMM_SPEC_PROC_TYPE_TAU == emm_specific_proc->type) {
+          auth_proc->is_cause_is_attach = false;
+          OAILOG_DEBUG(
+            LOG_NAS_EMM,
+            "Auth proc cause is EMM_SPEC_PROC_TYPE_TAU (%d) for ue_id (%u)\n",
+            emm_specific_proc->type,
+            ue_id);
+        }
+      }
+      auth_proc->ksi = ksi;
+      if (br_ue_token) {
+        auth_proc->is_broker = true;
+        memcpy(auth_proc->br_ue_token, br_ue_token, BR_UE_TOKEN_SIZE);
+        memcpy(auth_proc->br_ue_token_br_sig, br_ue_token_br_sig, BR_UE_TOKEN_BR_SIG_SIZE);
+        // combine the token and broker's sig   
+        uint8_t payload[BR_UE_TOKEN_SIZE + BR_UE_TOKEN_BR_SIG_SIZE];
+        memcpy(payload, br_ue_token, BR_UE_TOKEN_SIZE);
+        memcpy(payload + BR_UE_TOKEN_SIZE, br_ue_token_br_sig, BR_UE_TOKEN_BR_SIG_SIZE);
+
+        uint8_t br_ue_token_ut_sig[BR_UE_TOKEN_UT_SIG_SIZE];
+        unsigned int sig_length;
+        // current implmentation for ECDSA_sign, need to manually compute digest 
+        uint8_t digest[SHA_DIGEST_LENGTH];
+        SHA1(payload, BR_UE_TOKEN_SIZE + BR_UE_TOKEN_BR_SIG_SIZE, digest);
+        ECDSA_sign(NID_sha1, digest, SHA_DIGEST_LENGTH, (unsigned char*) br_ue_token_ut_sig, &sig_length, ut_private_ecdsa);
+        memcpy(auth_proc->br_ue_token_ut_sig, br_ue_token_ut_sig, BR_UE_TOKEN_UT_SIG_SIZE);
+      }
+      auth_proc->emm_cause = EMM_CAUSE_SUCCESS;
+      auth_proc->retransmission_count = 0;
+      auth_proc->ue_id = ue_id;
+      ((nas_base_proc_t *) auth_proc)->parent =
+        (nas_base_proc_t *) emm_specific_proc;
+      auth_proc->emm_com_proc.emm_proc.delivered = NULL;
+      auth_proc->emm_com_proc.emm_proc.previous_emm_fsm_state =
+        emm_fsm_get_state(emm_context);
+      auth_proc->emm_com_proc.emm_proc.not_delivered =
+        _authentication_ll_failure;
+      auth_proc->emm_com_proc.emm_proc.not_delivered_ho =
+        _authentication_non_delivered_ho;
+      auth_proc->emm_com_proc.emm_proc.base_proc.success_notif = success;
+      auth_proc->emm_com_proc.emm_proc.base_proc.failure_notif = failure;
+      auth_proc->emm_com_proc.emm_proc.base_proc.abort = _authentication_abort;
+      auth_proc->emm_com_proc.emm_proc.base_proc.fail_in =
+        NULL; // only response
+      auth_proc->emm_com_proc.emm_proc.base_proc.fail_out =
+        _authentication_reject;
+      auth_proc->emm_com_proc.emm_proc.base_proc.time_out =
+        _authentication_t3460_handler;
+    }
+
+    /*
+     * Send authentication request message to the UE
+     */
+    rc = _authentication_request(emm_context, auth_proc);
+
+    if (rc != RETURNerror) {
+      /*
+       * Notify EMM that common procedure has been initiated
+       */
+      emm_sap_t emm_sap = {0};
+
+      emm_sap.primitive = EMMREG_COMMON_PROC_REQ;
+      emm_sap.u.emm_reg.ue_id = ue_id;
+      emm_sap.u.emm_reg.ctx = emm_context;
+      rc = emm_sap_send(&emm_sap);
+    }
+  }
+  OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
+}
+// added for brokerd uTelco
+// auth infor success callback for broker
+static int _broker_auth_info_proc_success_cb(struct emm_context_s *emm_ctx)
+{
+  OAILOG_FUNC_IN(LOG_NAS_EMM);
+  OAILOG_INFO(LOG_NAS_EMM, "Broker authentication info proc success callback");
+  nas_auth_info_proc_t *auth_info_proc =
+    get_nas_cn_procedure_auth_info(emm_ctx);
+  mme_ue_s1ap_id_t ue_id =
+    PARENT_STRUCT(emm_ctx, struct ue_mm_context_s, emm_context)->mme_ue_s1ap_id;
+  int rc = RETURNerror;
+
+  if (auth_info_proc) {
+    if (!emm_ctx) {
+      OAILOG_ERROR(
+        LOG_NAS_EMM,
+        "EMM-PROC  - "
+        "Failed to find UE id " MME_UE_S1AP_ID_FMT "\n",
+        ue_id);
+      OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
+    }
+
+    // compute next eksi
+    ksi_t eksi = 0;
+    if (emm_ctx->_security.eksi < KSI_NO_KEY_AVAILABLE) {
+      REQUIREMENT_3GPP_24_301(R10_5_4_2_4__2);
+      eksi = (emm_ctx->_security.eksi + 1) % (EKSI_MAX_VALUE + 1);
+    }
+
+    /*
+     * Copy provided vector to user context
+     */
+    for (int i = 0; i < auth_info_proc->nb_vectors; i++) {
+      AssertFatal(MAX_EPS_AUTH_VECTORS > i, " TOO many vectors");
+      int destination_index = (i + eksi) % MAX_EPS_AUTH_VECTORS;
+      memcpy(
+        emm_ctx->_broker_vector[destination_index].br_ut_token,
+        auth_info_proc->broker_vector[i]->br_ut_token,
+        BR_UT_TOKEN_SIZE);
+      memcpy(
+        emm_ctx->_broker_vector[destination_index].br_ue_token,
+        auth_info_proc->broker_vector[i]->br_ue_token,
+        BR_UE_TOKEN_SIZE);
+      memcpy(
+        emm_ctx->_broker_vector[destination_index].br_ut_token_br_sig,
+        auth_info_proc->broker_vector[i]->br_ut_token_br_sig,
+        BR_UT_TOKEN_BR_SIG_SIZE);
+      memcpy(
+        emm_ctx->_broker_vector[destination_index].br_ue_token_br_sig,
+        auth_info_proc->broker_vector[i]->br_ue_token_br_sig,
+        BR_UE_TOKEN_BR_SIG_SIZE);
+      OAILOG_DEBUG(LOG_NAS_EMM, "EMM-PROC  - Received Broker Vector %u:\n", i);
+      OAILOG_DEBUG(
+        LOG_NAS_EMM,
+        "EMM-PROC  - Received Broker BR_UT_TOKEN ..: " BR_UT_TOKEN_FORMAT "\n",
+        BR_UT_TOKEN_DISPLAY(emm_ctx->_broker_vector[destination_index].br_ut_token));
+      OAILOG_DEBUG(
+        LOG_NAS_EMM,
+        "EMM-PROC  - Received Broker BR_UE_TOKEN ..: " BR_UE_TOKEN_FORMAT "\n",
+        BR_UE_TOKEN_DISPLAY(emm_ctx->_broker_vector[destination_index].br_ue_token));
+      emm_ctx_set_attribute_valid(
+        emm_ctx, EMM_CTXT_MEMBER_AUTH_VECTOR0 + destination_index);
+    }
+
+    nas_emm_auth_proc_t *auth_proc =
+      get_nas_common_procedure_authentication(emm_ctx);
+
+    if (auth_proc) {
+      if (auth_info_proc->nb_vectors > 0) {
+        emm_ctx_set_attribute_present(emm_ctx, EMM_CTXT_MEMBER_AUTH_VECTORS);
+
+        for (; eksi < MAX_EPS_AUTH_VECTORS; eksi++) {
+          if (IS_EMM_CTXT_VALID_AUTH_VECTOR(
+                emm_ctx, (eksi % MAX_EPS_AUTH_VECTORS))) {
+            break;
+          }
+        }
+        // eksi should always be 0
+        ksi_t eksi_mod = eksi % MAX_EPS_AUTH_VECTORS;
+        AssertFatal(
+          IS_EMM_CTXT_VALID_AUTH_VECTOR(emm_ctx, eksi_mod),
+          "TODO No valid vector, should not happen");
+
+        auth_proc->ksi = eksi;
+
+        // re-enter previous EMM state, before re-initiating the procedure
+        emm_sap_t emm_sap = {0};
+        emm_sap.primitive = EMMREG_COMMON_PROC_ABORT;
+        emm_sap.u.emm_reg.ue_id = ue_id;
+        emm_sap.u.emm_reg.ctx = emm_ctx;
+        emm_sap.u.emm_reg.notify = false;
+        emm_sap.u.emm_reg.free_proc = false;
+        emm_sap.u.emm_reg.u.common.common_proc = &auth_proc->emm_com_proc;
+        emm_sap.u.emm_reg.u.common.previous_emm_fsm_state =
+          auth_proc->emm_com_proc.emm_proc.previous_emm_fsm_state;
+        rc = emm_sap_send(&emm_sap);
+
+        rc = _verify_br_ut_token(emm_ctx->_broker_vector[eksi % MAX_EPS_AUTH_VECTORS].br_ut_token, emm_ctx->_broker_vector[eksi % MAX_EPS_AUTH_VECTORS].br_ut_token_br_sig, emm_ctx->ut_private_rsa, emm_ctx->br_id, emm_ctx->br_public_ecdsa); 
+
+        if(rc != RETURNok) {
+          OAILOG_WARNING(
+            LOG_NAS_EMM,
+            "EMM-PROC  - Failed to verify BR UT Token\n");
+        }
+        else {
+          OAILOG_INFO(
+            LOG_NAS_EMM,
+            "EMM-PROC  - Successfully verify BR UT Token\n");
+        }
+
+        if(rc == RETURNok) {
+           // TODO: this only works for single toekn response
+           OAILOG_INFO(LOG_NAS_EMM,"EMM-PROC  - decode the BR UT Token and load the Kasme\n");
+           uint8_t plain_token[BR_UT_PLAIN_TOKEN_SIZE];  
+           RSA_private_decrypt(BR_UT_TOKEN_SIZE, (unsigned char *)emm_ctx->_broker_vector[eksi % MAX_EPS_AUTH_VECTORS].br_ut_token, (unsigned char *)plain_token, emm_ctx->ut_private_rsa, RSA_PKCS1_PADDING);  
+           if(AUTH_KASME_SIZE == UE_UT_KEY_SIZE) {
+              memcpy(emm_ctx->_vector[eksi % MAX_EPS_AUTH_VECTORS].kasme, plain_token + BR_ID_SIZE, AUTH_KASME_SIZE);
+           } else {
+              OAILOG_WARNING(LOG_NAS_EMM,"EMM-PROC  - Inconsitent key size between BR UT Token and Kasme\n");
+           }
+        }
+
+        rc = emm_proc_broker_authentication_ksi(
+          emm_ctx,
+          (nas_emm_specific_proc_t *) auth_info_proc->cn_proc.base_proc.parent,
+          eksi,
+          emm_ctx->_broker_vector[eksi % MAX_EPS_AUTH_VECTORS].br_ue_token,
+          emm_ctx->_broker_vector[eksi % MAX_EPS_AUTH_VECTORS].br_ue_token_br_sig,
+          emm_ctx->ut_private_ecdsa,
+          auth_proc->emm_com_proc.emm_proc.base_proc.success_notif,
+          auth_proc->emm_com_proc.emm_proc.base_proc.failure_notif);
+
+        if (rc != RETURNok) {
+          /*
+           * Failed to initiate the authentication procedure
+           */
+          OAILOG_WARNING(
+            LOG_NAS_EMM,
+            "EMM-PROC  - "
+            "Failed to initiate authentication procedure\n");
+          auth_proc->emm_cause = EMM_CAUSE_ILLEGAL_UE;
+        }
+      } else {
+        OAILOG_WARNING(
+          LOG_NAS_EMM,
+          "EMM-PROC  - "
+          "Failed to initiate authentication procedure\n");
+        auth_proc->emm_cause = EMM_CAUSE_ILLEGAL_UE;
+        rc = RETURNerror;
+      }
+
+      nas_delete_cn_procedure(emm_ctx, &auth_info_proc->cn_proc);
+
+      if (rc != RETURNok) {
+        emm_sap_t emm_sap = {0};
+        emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
+        emm_sap.u.emm_reg.ue_id = ue_id;
+        emm_sap.u.emm_reg.ctx = emm_ctx;
+        emm_sap.u.emm_reg.notify = true;
+        emm_sap.u.emm_reg.free_proc = true;
+        emm_sap.u.emm_reg.u.common.common_proc = &auth_proc->emm_com_proc;
+        emm_sap.u.emm_reg.u.common.previous_emm_fsm_state =
+          auth_proc->emm_com_proc.emm_proc.previous_emm_fsm_state;
+        rc = emm_sap_send(&emm_sap);
+      }
+    } else {
+      nas_delete_cn_procedure(emm_ctx, &auth_info_proc->cn_proc);
+    }
+  }
+  OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
 }

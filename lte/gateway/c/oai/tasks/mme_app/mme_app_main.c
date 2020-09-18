@@ -379,6 +379,15 @@ void *mme_app_thread(void *args)
           mme_app_desc_p, &S6A_AUTH_INFO_ANS(received_message_p));
       } break;
 
+      case BROKER_AUTH_INFO_ANS: {
+        /*
+         * We received the authentication vectors from BROKER,
+         * Normally should trigger an authentication procedure towards UE.
+         */
+        nas_proc_broker_authentication_info_answer(
+          mme_app_desc_p, &BROKER_AUTH_INFO_ANS(received_message_p));
+      } break;
+
       case MME_APP_DOWNLINK_DATA_CNF: {
         nas_proc_dl_transfer_cnf(
           MME_APP_DL_DATA_CNF(received_message_p).ue_id,

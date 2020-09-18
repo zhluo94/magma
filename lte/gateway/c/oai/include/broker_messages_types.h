@@ -51,38 +51,45 @@
 #define BROKER_PURGE_UE_ANS(mSGpTR) (mSGpTR)->ittiMsg.broker_purge_ue_ans
 #define AUTS_LENGTH 14
 #define RESYNC_PARAM_LENGTH AUTS_LENGTH + RAND_LENGTH_OCTETS
+// for brokerd uTelco
+#define TOKEN_LENGTH 128
+#define UE_SIGNATURE_LENGTH 50
+#define UT_SIGNATURE_LENGTH 50
 
-typedef s6a_auth_info_req_t broker_auth_info_req_t;
-typedef s6a_auth_info_ans_t broker_auth_info_ans_t;
+//typedef s6a_auth_info_req_t broker_auth_info_req_t;
+// typedef s6a_auth_info_ans_t broker_auth_info_ans_t;
 typedef s6a_update_location_req_t broker_update_location_req_t;
 typedef s6a_update_location_ans_t broker_update_location_ans_t;
 typedef s6a_purge_ue_req_t broker_purge_ue_req_t;
 typedef s6a_purge_ue_ans_t broker_purge_ue_ans_t;
 
-// typedef struct broker_auth_info_req_s {
-//   char imsi[IMSI_BCD_DIGITS_MAX + 1];
-//   uint8_t imsi_length;
-//   plmn_t visited_plmn;
-//   /* Number of vectors to retrieve from HSS, should be equal to one */
-//   uint8_t nb_of_vectors;
+typedef struct broker_auth_info_req_s {
+  char imsi[IMSI_BCD_DIGITS_MAX + 1];
+  uint8_t imsi_length;
+  plmn_t visited_plmn;
+  /* Number of vectors to retrieve from HSS, should be equal to one */
+  uint8_t nb_of_vectors;
 
-//   /* Bit to indicate that USIM has requested a re-synchronization of SQN */
-//   unsigned re_synchronization : 1;
-//   /* AUTS to provide to AUC.
-//    * Only present and interpreted if re_synchronization == 1.
-//    */
-//   uint8_t resync_param[RAND_LENGTH_OCTETS + AUTS_LENGTH];
-// } broker_auth_info_req_t;
+  /* Bit to indicate that USIM has requested a re-synchronization of SQN */
+  unsigned re_synchronization : 1;
+  /* AUTS to provide to AUC.
+   * Only present and interpreted if re_synchronization == 1.
+   */
+  uint8_t resync_param[RAND_LENGTH_OCTETS + AUTS_LENGTH]; // TODO: need to change this
+  uint8_t ue_br_token[TOKEN_LENGTH];
+  uint8_t ue_br_token_ue_sig[UE_SIGNATURE_LENGTH];
+  uint8_t ue_br_token_ut_sig[UT_SIGNATURE_LENGTH];
+} broker_auth_info_req_t;
 
-// typedef struct broker_auth_info_ans_s {
-//   char imsi[IMSI_BCD_DIGITS_MAX + 1];
-//   uint8_t imsi_length;
+typedef struct broker_auth_info_ans_s {
+  char imsi[IMSI_BCD_DIGITS_MAX + 1];
+  uint8_t imsi_length;
 
-//   /* Result of the authentication information procedure */
-//   s6a_result_t result;
-//   /* Authentication info containing the vector(s) */
-//   authentication_info_t auth_info;
-// } broker_auth_info_ans_t;
+  /* Result of the authentication information procedure */
+  s6a_result_t result;
+  /* Authentication info containing the vector(s) */
+  broker_authentication_info_t auth_info;
+} broker_auth_info_ans_t;
 
 // typedef struct broker_purge_ue_req_s {
 //   char imsi[IMSI_BCD_DIGITS_MAX + 1];

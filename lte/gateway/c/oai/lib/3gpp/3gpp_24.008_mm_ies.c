@@ -190,6 +190,512 @@ int encode_authentication_parameter_autn_ie(
   return encoded;
 }
 
+
+//------------------------------------------------------------------------------
+// added for brokered-uTelco
+//------------------------------------------------------------------------------
+// For token
+int decode_bt_authentication_parameter_token_ie(
+  bt_authentication_parameter_token_t *btauthenticationparametertoken,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  OAILOG_FUNC_IN(LOG_NAS);
+  int decoded = 0;
+  uint8_t ielen = 0;
+  int decode_result;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, BT_AUTHENTICATION_PARAMETER_TOKEN_IE_MIN_LENGTH, len);
+    CHECK_IEI_DECODER(MM_BT_AUTHENTICATION_PARAMETER_TOKEN_IEI, *buffer);
+    decoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, (BT_AUTHENTICATION_PARAMETER_TOKEN_IE_MIN_LENGTH - 1), len);
+  }
+
+  ielen = *(buffer + decoded);
+  decoded++;
+  CHECK_LENGTH_DECODER(len - decoded, ielen);
+
+  if (
+    (decode_result = decode_bstring(
+       btauthenticationparametertoken, ielen, buffer + decoded, len - decoded)) < 0) {
+    OAILOG_FUNC_RETURN(LOG_NAS, decode_result);
+  } else
+    decoded += decode_result;
+
+  OAILOG_FUNC_RETURN(LOG_NAS, decoded);
+}
+
+//------------------------------------------------------------------------------
+int encode_bt_authentication_parameter_token_ie(
+  bt_authentication_parameter_token_t btauthenticationparametertoken,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  uint8_t *lenPtr;
+  int encode_result;
+  uint32_t encoded = 0;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, BT_AUTHENTICATION_PARAMETER_TOKEN_IE_MAX_LENGTH, len);
+    *buffer = MM_BT_AUTHENTICATION_PARAMETER_TOKEN_IEI; 
+    encoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, (BT_AUTHENTICATION_PARAMETER_TOKEN_IE_MAX_LENGTH - 1), len);
+  }
+
+  lenPtr = (buffer + encoded);
+  encoded++;
+
+  if (
+    (encode_result = encode_bstring(
+       btauthenticationparametertoken, buffer + encoded, len - encoded)) < 0)
+    return encode_result;
+  else
+    encoded += encode_result;
+
+  *lenPtr = encoded - 1 - ((iei_present) ? 1 : 0);
+  return encoded;
+}
+
+// For br_sig
+int decode_bt_authentication_parameter_br_sig_ie(
+  bt_authentication_parameter_br_sig_t *btauthenticationparameterbrsig,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  OAILOG_FUNC_IN(LOG_NAS);
+  int decoded = 0;
+  uint8_t ielen = 0;
+  int decode_result;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, BT_AUTHENTICATION_PARAMETER_BR_SIG_IE_MIN_LENGTH, len);
+    CHECK_IEI_DECODER(MM_BT_AUTHENTICATION_PARAMETER_BR_SIG_IEI, *buffer);
+    decoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, (BT_AUTHENTICATION_PARAMETER_BR_SIG_IE_MIN_LENGTH - 1), len);
+  }
+
+  ielen = *(buffer + decoded);
+  decoded++;
+  CHECK_LENGTH_DECODER(len - decoded, ielen);
+
+  if (
+    (decode_result = decode_bstring(
+       btauthenticationparameterbrsig, ielen, buffer + decoded, len - decoded)) < 0) {
+    OAILOG_FUNC_RETURN(LOG_NAS, decode_result);
+  } else
+    decoded += decode_result;
+
+  OAILOG_FUNC_RETURN(LOG_NAS, decoded);
+}
+
+//------------------------------------------------------------------------------
+int encode_bt_authentication_parameter_br_sig_ie(
+  bt_authentication_parameter_br_sig_t btauthenticationparameterbrsig,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  uint8_t *lenPtr;
+  int encode_result;
+  uint32_t encoded = 0;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, BT_AUTHENTICATION_PARAMETER_BR_SIG_IE_MAX_LENGTH, len);
+    *buffer = MM_BT_AUTHENTICATION_PARAMETER_BR_SIG_IEI; 
+    encoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, (BT_AUTHENTICATION_PARAMETER_BR_SIG_IE_MAX_LENGTH - 1), len);
+  }
+
+  lenPtr = (buffer + encoded);
+  encoded++;
+
+  if (
+    (encode_result = encode_bstring(
+       btauthenticationparameterbrsig, buffer + encoded, len - encoded)) < 0)
+    return encode_result;
+  else
+    encoded += encode_result;
+
+  *lenPtr = encoded - 1 - ((iei_present) ? 1 : 0);
+  return encoded;
+}
+// For ut_sig
+int decode_bt_authentication_parameter_ut_sig_ie(
+  bt_authentication_parameter_ut_sig_t *btauthenticationparameterutsig,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  OAILOG_FUNC_IN(LOG_NAS);
+  int decoded = 0;
+  uint8_t ielen = 0;
+  int decode_result;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, BT_AUTHENTICATION_PARAMETER_UT_SIG_IE_MIN_LENGTH, len);
+    CHECK_IEI_DECODER(MM_BT_AUTHENTICATION_PARAMETER_UT_SIG_IEI, *buffer);
+    decoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, (BT_AUTHENTICATION_PARAMETER_UT_SIG_IE_MIN_LENGTH - 1), len);
+  }
+
+  ielen = *(buffer + decoded);
+  decoded++;
+  CHECK_LENGTH_DECODER(len - decoded, ielen);
+
+  if (
+    (decode_result = decode_bstring(
+       btauthenticationparameterutsig, ielen, buffer + decoded, len - decoded)) < 0) {
+    OAILOG_FUNC_RETURN(LOG_NAS, decode_result);
+  } else
+    decoded += decode_result;
+
+  OAILOG_FUNC_RETURN(LOG_NAS, decoded);
+}
+
+//------------------------------------------------------------------------------
+int encode_bt_authentication_parameter_ut_sig_ie(
+  bt_authentication_parameter_ut_sig_t btauthenticationparameterutsig,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  uint8_t *lenPtr;
+  int encode_result;
+  uint32_t encoded = 0;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, BT_AUTHENTICATION_PARAMETER_UT_SIG_IE_MAX_LENGTH, len);
+    *buffer = MM_BT_AUTHENTICATION_PARAMETER_UT_SIG_IEI; 
+    encoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, (BT_AUTHENTICATION_PARAMETER_UT_SIG_IE_MAX_LENGTH - 1), len);
+  }
+
+  lenPtr = (buffer + encoded);
+  encoded++;
+
+  if (
+    (encode_result = encode_bstring(
+       btauthenticationparameterutsig, buffer + encoded, len - encoded)) < 0)
+    return encode_result;
+  else
+    encoded += encode_result;
+
+  *lenPtr = encoded - 1 - ((iei_present) ? 1 : 0);
+  return encoded;
+}
+// for response 
+int decode_bt_authentication_response_parameter_ie(
+  bt_authentication_response_parameter_t *btauthenticationresponseparameter,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  OAILOG_FUNC_IN(LOG_NAS);
+  int decoded = 0;
+  uint8_t ielen = 0;
+  int decode_result;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, BT_AUTHENTICATION_RESPONSE_PARAMETER_IE_MIN_LENGTH, len);
+    CHECK_IEI_DECODER(MM_BT_AUTHENTICATION_RESPONSE_PARAMETER_IEI, *buffer);
+    decoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, (BT_AUTHENTICATION_RESPONSE_PARAMETER_IE_MIN_LENGTH - 1), len);
+  }
+
+  ielen = *(buffer + decoded);
+  decoded++;
+  CHECK_LENGTH_DECODER(len - decoded, ielen);
+
+  if (
+    (decode_result = decode_bstring(
+       btauthenticationresponseparameter,
+       ielen,
+       buffer + decoded,
+       len - decoded)) < 0) {
+    OAILOG_FUNC_RETURN(LOG_NAS, decode_result);
+  } else
+    decoded += decode_result;
+
+  OAILOG_FUNC_RETURN(LOG_NAS, decoded);
+}
+
+//------------------------------------------------------------------------------
+int encode_bt_authentication_response_parameter_ie(
+  bt_authentication_response_parameter_t btauthenticationresponseparameter,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  uint8_t *lenPtr;
+  uint32_t encoded = 0;
+  int encode_result;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, BT_AUTHENTICATION_RESPONSE_PARAMETER_IE_MAX_LENGTH, len);
+    *buffer = MM_BT_AUTHENTICATION_RESPONSE_PARAMETER_IEI;
+    encoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, (BT_AUTHENTICATION_RESPONSE_PARAMETER_IE_MAX_LENGTH - 1), len);
+  }
+
+  lenPtr = (buffer + encoded);
+  encoded++;
+
+  if (
+    (encode_result = encode_bstring(
+       btauthenticationresponseparameter, buffer + encoded, len - encoded)) < 0)
+    return encode_result;
+  else
+    encoded += encode_result;
+
+  *lenPtr = encoded - 1 - ((iei_present) ? 1 : 0);
+  return encoded;
+}
+
+// For attach token
+int decode_bt_attach_parameter_token_ie(
+  bt_attach_parameter_token_t *btattachparametertoken,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  OAILOG_FUNC_IN(LOG_NAS);
+  int decoded = 0;
+  uint8_t ielen = 0;
+  int decode_result;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, BT_ATTACH_PARAMETER_TOKEN_IE_MIN_LENGTH, len);
+    CHECK_IEI_DECODER(ATTACH_REQUEST_BT_ATTACH_PARAMETER_TOKEN_IEI, *buffer);
+    decoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, (BT_ATTACH_PARAMETER_TOKEN_IE_MIN_LENGTH - 1), len);
+  }
+
+  ielen = *(buffer + decoded);
+  decoded++;
+  CHECK_LENGTH_DECODER(len - decoded, ielen);
+
+  if (
+    (decode_result = decode_bstring(
+       btattachparametertoken, ielen, buffer + decoded, len - decoded)) < 0) {
+    OAILOG_ERROR(LOG_NAS, "Fails decoding token");
+    OAILOG_FUNC_RETURN(LOG_NAS, decode_result);
+  } else
+    decoded += decode_result;
+
+  OAILOG_FUNC_RETURN(LOG_NAS, decoded);
+}
+
+//------------------------------------------------------------------------------
+int encode_bt_attach_parameter_token_ie(
+  bt_attach_parameter_token_t btattachparametertoken,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  uint8_t *lenPtr;
+  int encode_result;
+  uint32_t encoded = 0;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, BT_ATTACH_PARAMETER_TOKEN_IE_MAX_LENGTH, len);
+    *buffer = ATTACH_REQUEST_BT_ATTACH_PARAMETER_TOKEN_IEI; 
+    encoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, (BT_ATTACH_PARAMETER_TOKEN_IE_MAX_LENGTH - 1), len);
+  }
+
+  lenPtr = (buffer + encoded);
+  encoded++;
+
+  if (
+    (encode_result = encode_bstring(
+       btattachparametertoken, buffer + encoded, len - encoded)) < 0)
+    return encode_result;
+  else
+    encoded += encode_result;
+
+  *lenPtr = encoded - 1 - ((iei_present) ? 1 : 0);
+  return encoded;
+}
+// for attach ue sig
+int decode_bt_attach_parameter_ue_sig_ie(
+  bt_attach_parameter_ue_sig_t *btattachparameteruesig,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  OAILOG_FUNC_IN(LOG_NAS);
+  int decoded = 0;
+  uint8_t ielen = 0;
+  int decode_result;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, BT_ATTACH_PARAMETER_UE_SIG_IE_MIN_LENGTH, len);
+    CHECK_IEI_DECODER(ATTACH_REQUEST_BT_ATTACH_PARAMETER_UE_SIG_IEI, *buffer);
+    decoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, (BT_ATTACH_PARAMETER_UE_SIG_IE_MIN_LENGTH - 1), len);
+  }
+
+  ielen = *(buffer + decoded);
+  decoded++;
+  CHECK_LENGTH_DECODER(len - decoded, ielen);
+
+  if (
+    (decode_result = decode_bstring(
+       btattachparameteruesig, ielen, buffer + decoded, len - decoded)) < 0) {
+    OAILOG_ERROR(LOG_NAS, "Fails decoding ue sig");
+    OAILOG_FUNC_RETURN(LOG_NAS, decode_result);
+  } else
+    decoded += decode_result;
+
+  OAILOG_FUNC_RETURN(LOG_NAS, decoded);
+}
+
+//------------------------------------------------------------------------------
+int encode_bt_attach_parameter_ue_sig_ie(
+  bt_attach_parameter_ue_sig_t btattachparameteruesig,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  uint8_t *lenPtr;
+  int encode_result;
+  uint32_t encoded = 0;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, BT_ATTACH_PARAMETER_UE_SIG_IE_MAX_LENGTH, len);
+    *buffer = ATTACH_REQUEST_BT_ATTACH_PARAMETER_UE_SIG_IEI; 
+    encoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, (BT_ATTACH_PARAMETER_UE_SIG_IE_MAX_LENGTH - 1), len);
+  }
+
+  lenPtr = (buffer + encoded);
+  encoded++;
+
+  if (
+    (encode_result = encode_bstring(
+       btattachparameteruesig, buffer + encoded, len - encoded)) < 0)
+    return encode_result;
+  else
+    encoded += encode_result;
+
+  *lenPtr = encoded - 1 - ((iei_present) ? 1 : 0);
+  return encoded;
+}
+// for attach br id
+int decode_bt_attach_parameter_br_id_ie(
+  bt_attach_parameter_br_id_t *btattachparameterbrid,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  OAILOG_FUNC_IN(LOG_NAS);
+  int decoded = 0;
+  uint8_t ielen = 0;
+  int decode_result;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, BT_ATTACH_PARAMETER_BR_ID_IE_MIN_LENGTH, len);
+    CHECK_IEI_DECODER(ATTACH_REQUEST_BT_ATTACH_PARAMETER_BR_ID_IEI, *buffer);
+    decoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, (BT_ATTACH_PARAMETER_BR_ID_IE_MIN_LENGTH - 1), len);
+  }
+
+  ielen = *(buffer + decoded);
+  decoded++;
+  CHECK_LENGTH_DECODER(len - decoded, ielen);
+
+  if (
+    (decode_result = decode_bstring(
+       btattachparameterbrid, ielen, buffer + decoded, len - decoded)) < 0) {
+    OAILOG_ERROR(LOG_NAS, "Fails decoding br id");
+    OAILOG_FUNC_RETURN(LOG_NAS, decode_result);
+  } else
+    decoded += decode_result;
+
+  OAILOG_FUNC_RETURN(LOG_NAS, decoded);
+}
+
+//------------------------------------------------------------------------------
+int encode_bt_attach_parameter_br_id_ie(
+  bt_attach_parameter_br_id_t btattachparameterbrid,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  uint8_t *lenPtr;
+  int encode_result;
+  uint32_t encoded = 0;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, BT_ATTACH_PARAMETER_BR_ID_IE_MAX_LENGTH, len);
+    *buffer = ATTACH_REQUEST_BT_ATTACH_PARAMETER_BR_ID_IEI; 
+    encoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, (BT_ATTACH_PARAMETER_BR_ID_IE_MAX_LENGTH - 1), len);
+  }
+
+  lenPtr = (buffer + encoded);
+  encoded++;
+
+  if (
+    (encode_result = encode_bstring(
+       btattachparameterbrid, buffer + encoded, len - encoded)) < 0)
+    return encode_result;
+  else
+    encoded += encode_result;
+
+  *lenPtr = encoded - 1 - ((iei_present) ? 1 : 0);
+  return encoded;
+}
+//------------------------------------------------------------------------------
+//ended for brokered-uTelco
+//------------------------------------------------------------------------------
+
 //------------------------------------------------------------------------------
 // 10.5.3.2 Authentication Response parameter
 //------------------------------------------------------------------------------
@@ -206,12 +712,12 @@ int decode_authentication_response_parameter_ie(
 
   if (iei_present) {
     CHECK_PDU_POINTER_AND_LENGTH_DECODER(
-      buffer, AUTHENTICATION_RESPONSE_PARAMETER_IE_MAX_LENGTH, len);
+      buffer, AUTHENTICATION_RESPONSE_PARAMETER_IE_MIN_LENGTH, len);
     CHECK_IEI_DECODER(MM_AUTHENTICATION_RESPONSE_PARAMETER_IEI, *buffer);
     decoded++;
   } else {
     CHECK_PDU_POINTER_AND_LENGTH_DECODER(
-      buffer, (AUTHENTICATION_RESPONSE_PARAMETER_IE_MAX_LENGTH - 1), len);
+      buffer, (AUTHENTICATION_RESPONSE_PARAMETER_IE_MIN_LENGTH - 1), len);
   }
 
   ielen = *(buffer + decoded);
@@ -265,6 +771,7 @@ int encode_authentication_response_parameter_ie(
   *lenPtr = encoded - 1 - ((iei_present) ? 1 : 0);
   return encoded;
 }
+
 
 //------------------------------------------------------------------------------
 // 10.5.3.2.2 Authentication Failure parameter (UMTS and EPS authentication challenge)

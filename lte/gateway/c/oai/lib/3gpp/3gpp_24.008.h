@@ -404,6 +404,14 @@ typedef enum mobility_managenent_ie_e {
   MM_TIME_ZONE_IEI = 0x46,                         /* 0x46 = 70 */
   MM_TIME_ZONE_AND_TIME_IEI = 0x47,                /* 0x47 = 71 */
   MM_DAYLIGHT_SAVING_TIME_IEI = 0x49,              /* 0x49 = 73 */
+  // added for brokerd uTelco
+  MM_BT_AUTHENTICATION_PARAMETER_TOKEN_IEI = 0x65,  /* 0x65 = 101 */
+  MM_BT_AUTHENTICATION_PARAMETER_BR_SIG_IEI = 0x66,  /* 0x66 = 102 */
+  MM_BT_AUTHENTICATION_PARAMETER_UT_SIG_IEI = 0x67,  /* 0x67 = 103 */
+  MM_BT_AUTHENTICATION_RESPONSE_PARAMETER_IEI = 0x68, /* 0x68 = 104 */
+  ATTACH_REQUEST_BT_ATTACH_PARAMETER_TOKEN_IEI = 0x69,  /* 0x69 = 105 */
+  ATTACH_REQUEST_BT_ATTACH_PARAMETER_UE_SIG_IEI = 0x6a,  /* 0x6a = 106 */
+  ATTACH_REQUEST_BT_ATTACH_PARAMETER_BR_ID_IEI = 0x6b,  /* 0x6a = 106 */
 } mobility_managenent_ie_t;
 
 //------------------------------------------------------------------------------
@@ -445,6 +453,140 @@ int decode_authentication_parameter_autn_ie(
   const bool iei_present,
   uint8_t *buffer,
   const uint32_t len);
+
+
+//------------------------------------------------------------------------------
+//added for brokered-uTelco
+//------------------------------------------------------------------------------
+// TOKEN
+#define BT_AUTHENTICATION_PARAMETER_TOKEN_IE_TYPE 4
+#define BT_AUTHENTICATION_PARAMETER_TOKEN_IE_MIN_LENGTH 130 // (128 + 2)
+#define BT_AUTHENTICATION_PARAMETER_TOKEN_IE_MAX_LENGTH 130
+
+typedef bstring bt_authentication_parameter_token_t;
+
+int encode_bt_authentication_parameter_token_ie(
+  bt_authentication_parameter_token_t btauthenticationparametertoken,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+int decode_bt_authentication_parameter_token_ie(
+  bt_authentication_parameter_token_t *btauthenticationparametertoken,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+
+// BR_SIG
+#define BT_AUTHENTICATION_PARAMETER_BR_SIG_IE_TYPE 4
+#define BT_AUTHENTICATION_PARAMETER_BR_SIG_IE_MIN_LENGTH 47 // (45 + 2)
+#define BT_AUTHENTICATION_PARAMETER_BR_SIG_IE_MAX_LENGTH 52 // (50 + 2)
+
+typedef bstring bt_authentication_parameter_br_sig_t;
+
+int encode_bt_authentication_parameter_br_sig_ie(
+  bt_authentication_parameter_br_sig_t btauthenticationparameterbrsig,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+int decode_bt_authentication_parameter_br_sig_ie(
+  bt_authentication_parameter_br_sig_t *btauthenticationparameterbrsig,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+
+// UT_SIG
+#define BT_AUTHENTICATION_PARAMETER_UT_SIG_IE_TYPE 4
+#define BT_AUTHENTICATION_PARAMETER_UT_SIG_IE_MIN_LENGTH 47 // (45 + 2)
+#define BT_AUTHENTICATION_PARAMETER_UT_SIG_IE_MAX_LENGTH 52 // (50 + 2)
+
+typedef bstring bt_authentication_parameter_ut_sig_t;
+
+int encode_bt_authentication_parameter_ut_sig_ie(
+  bt_authentication_parameter_ut_sig_t btauthenticationparameterutsig,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+int decode_bt_authentication_parameter_ut_sig_ie(
+  bt_authentication_parameter_ut_sig_t *btauthenticationparameterutsig,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+
+// RESPONSE
+#define BT_AUTHENTICATION_RESPONSE_PARAMETER_IE_TYPE 4
+#define BT_AUTHENTICATION_RESPONSE_PARAMETER_IE_MIN_LENGTH 3
+#define BT_AUTHENTICATION_RESPONSE_PARAMETER_IE_MAX_LENGTH 3
+
+typedef bstring bt_authentication_response_parameter_t;
+
+int encode_bt_authentication_response_parameter_ie(
+  bt_authentication_response_parameter_t btauthenticationresponseparameter,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+int decode_bt_authentication_response_parameter_ie(
+  bt_authentication_response_parameter_t *btauthenticationresponseparameter,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+
+// ATTACH TOKEN
+#define BT_ATTACH_PARAMETER_TOKEN_IE_TYPE 4
+#define BT_ATTACH_PARAMETER_TOKEN_IE_MIN_LENGTH 130 // (128 + 2)
+#define BT_ATTACH_PARAMETER_TOKEN_IE_MAX_LENGTH 130
+
+typedef bstring bt_attach_parameter_token_t;
+
+int encode_bt_attach_parameter_token_ie(
+  bt_attach_parameter_token_t btattachparametertoken,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+int decode_bt_attach_parameter_token_ie(
+  bt_attach_parameter_token_t *btattachparametertoken,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+
+// ATTACH UE SIG
+#define BT_ATTACH_PARAMETER_UE_SIG_IE_TYPE 4
+#define BT_ATTACH_PARAMETER_UE_SIG_IE_MIN_LENGTH 47 // (45 + 2)
+#define BT_ATTACH_PARAMETER_UE_SIG_IE_MAX_LENGTH 52 // (50 + 2)
+
+typedef bstring bt_attach_parameter_ue_sig_t;
+
+int encode_bt_attach_parameter_ue_sig_ie(
+  bt_attach_parameter_ue_sig_t btattachparameteruesig,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+int decode_bt_attach_parameter_ue_sig_ie(
+  bt_attach_parameter_ue_sig_t *btattacharameteruesig,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+
+// ATTACH BR ID
+#define BT_ATTACH_PARAMETER_BR_ID_IE_TYPE 4
+#define BT_ATTACH_PARAMETER_BR_ID_IE_MIN_LENGTH 130 // (128 + 2)
+#define BT_ATTACH_PARAMETER_BR_ID_IE_MAX_LENGTH 130
+
+typedef bstring bt_attach_parameter_br_id_t;
+
+int encode_bt_attach_parameter_br_id_ie(
+  bt_attach_parameter_br_id_t btattachparameterbrid,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+int decode_bt_attach_parameter_br_id_ie(
+  bt_attach_parameter_br_id_t *btattachparameterbrid,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+
+//------------------------------------------------------------------------------
+//ended for brokered-uTelco
+//------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
 // 10.5.3.2 Authentication Response parameter

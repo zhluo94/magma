@@ -62,7 +62,9 @@ typedef enum emmcn_primitive_s {
   _EMMCN_CS_DOMAIN_MM_INFORMATION_REQ,
   _EMMCN_DEACTIVATE_BEARER_REQ, // LG
   _EMMCN_PDN_DISCONNECT_RES,
-  _EMMCN_END
+  // added for brokerd utelco
+  _EMMCN_BROKER_AUTHENTICATION_PARAM_RES,
+  _EMMCN_END,
 } emm_cn_primitive_t;
 
 typedef enum pdn_conn_rsp_cause_e {
@@ -85,6 +87,18 @@ typedef struct emm_cn_auth_res_s {
   /* Consider only one E-UTRAN vector for the moment... */
   eutran_vector_t* vector[MAX_EPS_AUTH_VECTORS];
 } emm_cn_auth_res_t;
+
+// added for brokerd uTelco
+typedef struct emm_cn_broker_auth_res_s {
+  /* UE identifier */
+  mme_ue_s1ap_id_t ue_id;
+
+  /* For future use: nb of vectors provided */
+  uint8_t nb_vectors;
+
+  /* Consider only one BROKER vector for the moment... */
+  broker_vector_t* vector[MAX_EPS_AUTH_VECTORS];
+} emm_cn_broker_auth_res_t;
 
 typedef struct emm_cn_auth_fail_s {
   /* UE identifier */
@@ -203,6 +217,8 @@ typedef struct emm_mme_ul_s {
     emm_cn_cs_domain_location_updt_fail_t emm_cn_cs_domain_location_updt_fail;
     emm_cn_cs_domain_mm_information_req_t* emm_cn_cs_domain_mm_information_req;
     emm_cn_pdn_disconnect_rsp_t* emm_cn_pdn_disconnect_rsp;
+    // added for brokerd uTelco
+    emm_cn_broker_auth_res_t* broker_auth_res;
   } u;
 } emm_cn_t;
 

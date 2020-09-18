@@ -1206,6 +1206,11 @@ static int _emm_start_attach_proc_authentication(
   OAILOG_FUNC_IN(LOG_NAS_EMM);
   int rc = RETURNerror;
 
+  //TODO: fix this later
+  // added for brokerd utelco
+  emm_context->ut_private_rsa = _ut_keys.ut_private_rsa;
+  emm_context->ut_private_ecdsa = _ut_keys.ut_private_ecdsa;
+  emm_context->br_public_ecdsa = _ut_keys.br_public_ecdsa; 
   if ((emm_context) && (attach_proc)) {
     rc = emm_proc_authentication(
       emm_context,
@@ -2409,6 +2414,16 @@ void free_emm_attach_request_ies(emm_attach_request_ies_t **const ies)
   }
   if ((*ies)->voicedomainpreferenceandueusagesetting) {
     free_wrapper((void **) &(*ies)->voicedomainpreferenceandueusagesetting);
+  }
+  // added for brokerd uTelco
+  if ((*ies)->btattachparametertoken) {
+    bdestroy_wrapper(&(*ies)->btattachparametertoken);
+  }
+  if ((*ies)->btattachparameteruesig) {
+    bdestroy_wrapper(&(*ies)->btattachparameteruesig);
+  }
+  if ((*ies)->btattachparameterbrid) {
+    bdestroy_wrapper(&(*ies)->btattachparameterbrid);
   }
  free_wrapper((void **) ies);
 }

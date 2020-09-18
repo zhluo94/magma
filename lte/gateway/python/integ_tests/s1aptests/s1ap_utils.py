@@ -36,6 +36,9 @@ from magma.subscriberdb.sid import SIDUtils
 from lte.protos.session_manager_pb2_grpc import SessionProxyResponderStub
 from orc8r.protos.directoryd_pb2 import GetDirectoryFieldRequest
 from orc8r.protos.directoryd_pb2_grpc import GatewayDirectoryServiceStub
+from M2Crypto import EC, RSA
+from hashlib import sha1
+from random import getrandbits
 
 DEFAULT_GRPC_TIMEOUT = 10
 
@@ -98,6 +101,11 @@ class S1ApUtil(object):
 
         # Maintain a map of UE IDs to IPs
         self._ue_ip_map = {}
+        
+        # added for brokerd utelco (TODO: fix the absolute path)
+        self.br_rsa_pub_key =  RSA.load_pub_key('/home/vagrant/key_files/br_rsa_pub.pem')
+        self.ue_ecdsa_pri_key = EC.load_key('/home/vagrant/key_files/ue_ec_pri.pem')
+        self.ut_rsa_pub_key = RSA.load_pub_key('/home/vagrant/key_files/ut_rsa_pub.pem')
 
     def cleanup(self):
         """
@@ -183,6 +191,26 @@ class S1ApUtil(object):
             protCfgOpts_pr.c[0].cid = 0x000C
             protCfgOpts_pr.c[1].cid = 0x0001
 
+    # added for brokerd utelco
+    def get_token_sig(self, ue_id, utelco_id, nonce):
+        plain_text = bytearray(b'')
+        plain_text.append(ue_id)
+        plain_text.append(utelco_id)
+        plain_text.extend(nonce)
+        token = self.br_rsa_pub_key.public_encrypt(plain_text, RSA.pkcs1_padding)
+        sig = self.ue_ecdsa_pri_key.sign_dsa_asn1(sha1(token).digest())
+        assert len(token) == 128 and len(sig) <= 50, (len(token),len(sig))
+        print('nonce {} {}'.format(nonce[0], nonce[-1]))
+        return token, sig
+
+    def get_br_id(self, br_id, nonce):
+        plain_text = bytearray(b'')
+        plain_text.append(br_id)
+        plain_text.extend(nonce)
+        brid = self.ut_rsa_pub_key.public_encrypt(plain_text, RSA.pkcs1_padding)
+        assert len(brid) == 128
+        return brid
+
     def attach(
         self,
         ue_id,
@@ -194,6 +222,7 @@ class S1ApUtil(object):
         eps_type=s1ap_types.TFW_EPS_ATTACH_TYPE_EPS_ATTACH,
         pdn_type=1,
         pcscf_addr_type=None,
+        use_broker=False
     ):
         """
         Given a UE issue the attach request of specified type
@@ -220,6 +249,29 @@ class S1ApUtil(object):
         attach_req.useOldSecCtxt = sec_ctxt
         attach_req.pdnType_pr.pres = True
         attach_req.pdnType_pr.pdn_type = pdn_type
+        # added for brokerd utelco
+        if use_broker:
+            nonce_size = 5
+            nonce = bytearray(getrandbits(8) for _ in range(nonce_size))
+            token, sig = self.get_token_sig(ue_id, 0, nonce)
+            attach_req.btattachparametertoken.pres = True
+            attach_req.btattachparametertoken.len  = len(token)
+            print(type(token))
+            attach_req.btattachparametertoken.token = (ctypes.c_uint8*len(token)).from_buffer(bytearray(token))            
+            attach_req.btattachparameteruesig.pres = True
+            attach_req.btattachparameteruesig.len = len(sig)
+            attach_req.btattachparameteruesig.sig = (ctypes.c_uint8*len(sig)).from_buffer(bytearray(sig)) 
+            br_id = 0
+            nonce = bytearray(getrandbits(8) for _ in range(nonce_size))
+            brid = self.get_br_id(br_id, nonce)
+            attach_req.btattachparameterbrid.pres = True
+            attach_req.btattachparameterbrid.len = len(brid)
+            attach_req.btattachparameterbrid.brid = (ctypes.c_uint8*len(brid)).from_buffer(bytearray(brid)) 
+
+        else:
+            attach_req.btattachparametertoken.pres = False
+            attach_req.btattachparameteruesig.pres = False
+            attach_req.btattachparameterbrid.pres  = False
 
         # Populate PCO only if pcscf_addr_type is set
         if pcscf_addr_type:

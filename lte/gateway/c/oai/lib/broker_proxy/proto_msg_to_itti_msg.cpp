@@ -40,6 +40,62 @@ void convert_proto_msg_to_itti_broker_auth_info_ans(
   BrokerAuthenticationInformationAnswer msg,
   broker_auth_info_ans_t *itti_msg)
 {
+  if (msg.br_auth_vectors_size() > MAX_EPS_AUTH_VECTORS) {
+    std::cout << "[ERROR] Number of eutran auth vectors received is:"
+                 << msg.br_auth_vectors_size() << std::endl;
+    return;
+  }
+  itti_msg->auth_info.nb_of_vectors = msg.br_auth_vectors_size();
+  uint8_t idx = 0;
+  while (idx < itti_msg->auth_info.nb_of_vectors) {
+    auto br_auth_vector = msg.br_auth_vectors(idx);
+    broker_vector_t *itti_broker_vector =
+      &(itti_msg->auth_info.broker_auth_vector[idx]);
+    if (br_auth_vector.br_ut_token().length() == BR_UT_TOKEN_LENGTH_OCTETS) {
+      memcpy(
+        itti_broker_vector->br_ut_token,
+        br_auth_vector.br_ut_token().c_str(),
+        br_auth_vector.br_ut_token().length());
+    } else {
+      std::cout << "[ERROR] Invalid br_ut_token length " << br_auth_vector.br_ut_token().length() << std::endl;
+      return;
+    }
+    if (br_auth_vector.br_ut_token_br_sig().length() <= BR_UT_TOKEN_BR_SIG_LENGTH_OCTETS) {
+      memcpy(
+        itti_broker_vector->br_ut_token_br_sig,
+        br_auth_vector.br_ut_token_br_sig().c_str(),
+        br_auth_vector.br_ut_token_br_sig().length());
+    } else {
+      std::cout << "[ERROR] Invalid br_ut_token_br_sig length " << br_auth_vector.br_ut_token_br_sig().length() << std::endl;
+      return;
+    }
+    if (br_auth_vector.br_ue_token().length() == BR_UE_TOKEN_LENGTH_OCTETS) {
+      memcpy(
+        itti_broker_vector->br_ue_token,
+        br_auth_vector.br_ue_token().c_str(),
+        br_auth_vector.br_ue_token().length());
+    } else {
+      std::cout << "[ERROR] Invalid br_ue_token length " << br_auth_vector.br_ue_token().length() << std::endl;
+      return;
+    }
+    if (br_auth_vector.br_ue_token_br_sig().length() <= BR_UE_TOKEN_BR_SIG_LENGTH_OCTETS) {
+      memcpy(
+        itti_broker_vector->br_ue_token_br_sig,
+        br_auth_vector.br_ue_token_br_sig().c_str(),
+        br_auth_vector.br_ue_token_br_sig().length());
+    } else {
+      std::cout << "[ERROR] Invalid br_ue_token_br_sig length " << br_auth_vector.br_ue_token_br_sig().length() << std::endl;
+      return;
+    }
+    ++idx;
+  }
+  return;
+}
+/*
+void convert_proto_msg_to_itti_broker_auth_info_ans(
+  BrokerAuthenticationInformationAnswer msg,
+  broker_auth_info_ans_t *itti_msg)
+{
   if (msg.eutran_vectors_size() > MAX_EPS_AUTH_VECTORS) {
     std::cout << "[ERROR] Number of eutran auth vectors received is:"
                  << msg.eutran_vectors_size() << std::endl;
@@ -90,7 +146,7 @@ void convert_proto_msg_to_itti_broker_auth_info_ans(
     ++idx;
   }
   return;
-}
+}*/
 
 void convert_proto_msg_to_itti_broker_update_location_ans(
   BrokerUpdateLocationAnswer msg,

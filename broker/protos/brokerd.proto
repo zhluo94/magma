@@ -42,6 +42,10 @@ message BrokerAuthenticationInformationRequest {
     bool immediate_response_preferred = 4;
     // Concatenation of RAND and AUTS in the case of a resync attach case
     bytes resync_info = 5;
+    // added for three-way Authentication (TODO: fix the above fileds)
+    bytes ue_br_token = 6;
+    bytes ue_br_token_ue_sig = 7;
+    bytes ue_br_token_ut_sig = 8;
 }
 
 
@@ -50,14 +54,12 @@ message BrokerAuthenticationInformationAnswer {
     // EPC error code on failure
     ErrorCode error_code = 1;
     // Authentication vectors matching the requested number
-    repeated EUTRANVector eutran_vectors = 2;
-
-    // For details about fields read 3GPP 33.401
-    message EUTRANVector {
-        bytes rand = 1;
-        bytes xres = 2;
-        bytes autn = 3;
-        bytes kasme = 4;
+    repeated BrokerAuthVector br_auth_vectors = 2;
+    message BrokerAuthVector {
+        bytes br_ut_token = 1;
+        bytes br_ut_token_br_sig = 2;
+        bytes br_ue_token = 3;
+        bytes br_ue_token_br_sig = 4;
     }
 }
 

@@ -11,7 +11,7 @@ define setup_rules
 endef
 _ := $(foreach python_src, $(PYTHON_SRCS), $(eval $(call setup_rules,$(python_src))))
 
-buildenv: setupenv protos swagger $(BUILD_LIST)
+buildenv: setupenv protos swagger $(BUILD_LIST) m2crypto
 $(BUILD_LIST): %_build:
 	make -C $* install_egg
 
@@ -27,6 +27,10 @@ $(BIN)/nosetests: install_virtualenv
 
 $(BIN)/coverage: install_virtualenv
 	$(VIRT_ENV_PIP_INSTALL) "coverage==4.5.1"
+
+# added for brokerd utelco
+m2crypto: install_virtualenv
+	$(BIN)/pip3 install M2Crypto
 
 $(BIN)/pylint: install_virtualenv
     # https://github.com/PyCQA/pylint/issues/380

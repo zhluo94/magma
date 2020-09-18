@@ -81,7 +81,7 @@ add_boolean_option(EMBEDDED_SGW                    False    "Add the SPGW task t
 add_boolean_option(LINK_GCOV                       False    "Whether to link gcov")
 
 add_boolean_option(S6A_OVER_GRPC                   True     "S6a messages sent over gRPC")
-add_boolean_option(BROKER_INTEG_TEST                   True     "Integration test for broker")
+add_boolean_option(BROKER_INTEG_TEST               False     "Integration test for broker")
 
 ################################################################
 # Include CMake modules to find other library

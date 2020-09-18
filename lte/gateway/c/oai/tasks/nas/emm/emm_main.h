@@ -57,6 +57,8 @@ Description Defines the EPS Mobility Management procedure call manager,
 /****************************************************************************/
 
 emm_data_t _emm_data;
+//added for brokerd utelco
+ut_keys_t _ut_keys;
 
 /****************************************************************************/
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
