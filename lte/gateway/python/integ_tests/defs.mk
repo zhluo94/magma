@@ -8,11 +8,15 @@
 PROTO_LIST:=orc8r_protos lte_protos feg_protos
 
 # Add the brokerd uTelco tests
-MANDATORY_BT_TESTS = s1aptests/test_attach_detach_broker.py
+MANDATORY_BT_TESTS = s1aptests/test_attach_detach_broker.py \
+s1aptests/test_attach_detach.py 
 
 # Add the s1aptester integration tests
-MANDATORY_TESTS = s1aptests/test_attach_detach.py \
+MANDATORY_TESTS = s1aptests/test_attach_detach_broker.py \
+s1aptests/test_attach_detach.py \
+s1aptests/test_attach_latency_mixed.py \
 s1aptests/test_attach_detach_broker.py \
+s1aptests/test_attach_detach_latency.py \
 s1aptests/test_gateway_metrics_attach_detach.py \
 s1aptests/test_attach_detach_multi_ue.py \
 s1aptests/test_attach_detach_looped.py  \

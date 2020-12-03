@@ -41,6 +41,11 @@ else
 	$(foreach test,$(MANDATORY_TESTS),$(call execute_test,$(test));)
 endif
 
+.PHONY: bt_integ_test
+bt_integ_test: $(PYTHON_BUILD)/setupinteg_env $(BIN)/nosetests
+	. $(PYTHON_BUILD)/bin/activate
+	$(foreach test,$(MANDATORY_BT_TESTS),$(call execute_test,$(test));)
+
 local_integ_test:
 	# check if magma services are running
 	systemctl is-active --quiet magma@magmad || (echo "Local integ tests should be run on access gw with magma services running"; exit 1)
