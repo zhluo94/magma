@@ -22,6 +22,7 @@ from lte.protos.session_manager_pb2_grpc import \
     add_CentralSessionControllerServicer_to_server
 from lte.protos.subscriberdb_pb2_grpc import SubscriberDBStub
 from orc8r.protos.common_pb2 import NetworkID
+from lte.protos.subscriberdb_pb2 import SubscriberID
 
 
 class SessionRpcServicer(CentralSessionControllerServicer):
@@ -166,7 +167,7 @@ class SessionRpcServicer(CentralSessionControllerServicer):
 
     def _get_rules_for_imsi(self, imsi: str) -> List[StaticRuleInstall]:
         try:
-            info = self._subscriberdb_stub.GetSubscriberData(NetworkID(id=imsi))
+            info = self._subscriberdb_stub.GetSubscriberData(SubscriberID(id=imsi[4:])) # get rid of the "IMSI"
             return [StaticRuleInstall(rule_id=rule_id)
                     for rule_id in info.lte.assigned_policies]
         except grpc.RpcError:
@@ -186,12 +187,3 @@ class SessionRpcServicer(CentralSessionControllerServicer):
                 )
             )]
         return []
-
-    def _get_rules_for_imsi(self, imsi: str) -> List[StaticRuleInstall]:
-        try:
-            info = self._subscriberdb_stub.GetSubscriberData(NetworkID(id=imsi))
-            return [StaticRuleInstall(rule_id=rule_id)
-                    for rule_id in info.lte.assigned_policies]
-        except grpc.RpcError:
-            logging.error('Unable to find data for subscriber %s', imsi)
-            return []
