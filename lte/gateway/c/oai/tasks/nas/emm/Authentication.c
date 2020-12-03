@@ -1518,7 +1518,6 @@ static int _authentication_request(
       emm_sap.u.emm_as.u.security.msg_type = EMM_AS_MSG_TYPE_BT_AUTH;
       memcpy(emm_sap.u.emm_as.u.security.br_ue_token, auth_proc->br_ue_token, BR_UE_TOKEN_SIZE);
       memcpy(emm_sap.u.emm_as.u.security.br_ue_token_br_sig, auth_proc->br_ue_token_br_sig, BR_UE_TOKEN_BR_SIG_SIZE);
-      memcpy(emm_sap.u.emm_as.u.security.br_ue_token_ut_sig, auth_proc->br_ue_token_ut_sig, BR_UE_TOKEN_UT_SIG_SIZE);
     }
     else {
       emm_sap.u.emm_as.u.security.msg_type = EMM_AS_MSG_TYPE_AUTH;
@@ -1857,7 +1856,7 @@ static void _nas_itti_broker_auth_info_req(
 
   OAILOG_INFO(LOG_NAS_EMM,"EMM-PROC  - decode the BR Id\n");
   uint8_t plain_br_id[BR_ID_SIZE + NONCE_SIZE];  
-  RSA_private_decrypt(BR_UT_TOKEN_SIZE, (unsigned char *)br_id->data, (unsigned char *)plain_br_id, ut_private_rsa, RSA_PKCS1_PADDING);  
+  memcpy(plain_br_id, (unsigned char *)br_id->data, BR_ID_SIZE + NONCE_SIZE);
 
   if(plain_br_id[0] != 0) {
     OAILOG_CRITICAL(
@@ -2067,12 +2066,6 @@ int emm_proc_broker_authentication_ksi(
         uint8_t payload[BR_UE_TOKEN_SIZE + BR_UE_TOKEN_BR_SIG_SIZE];
         memcpy(payload, br_ue_token, BR_UE_TOKEN_SIZE);
         memcpy(payload + BR_UE_TOKEN_SIZE, br_ue_token_br_sig, BR_UE_TOKEN_BR_SIG_SIZE);
-
-        unsigned int sig_length;
-        // current implmentation for ECDSA_sign, need to manually compute digest 
-        uint8_t digest[SHA_DIGEST_LENGTH];
-        SHA1(payload, BR_UE_TOKEN_SIZE + BR_UE_TOKEN_BR_SIG_SIZE, digest);
-        ECDSA_sign(NID_sha1, digest, SHA_DIGEST_LENGTH, (unsigned char*) auth_proc->br_ue_token_ut_sig, &sig_length, ut_private_ecdsa);
       }
       auth_proc->emm_cause = EMM_CAUSE_SUCCESS;
       auth_proc->retransmission_count = 0;

@@ -498,24 +498,6 @@ int decode_bt_authentication_parameter_br_sig_ie(
   uint8_t *buffer,
   const uint32_t len);
 
-// UT_SIG
-#define BT_AUTHENTICATION_PARAMETER_UT_SIG_IE_TYPE 4
-#define BT_AUTHENTICATION_PARAMETER_UT_SIG_IE_MIN_LENGTH 47 // (45 + 2)
-#define BT_AUTHENTICATION_PARAMETER_UT_SIG_IE_MAX_LENGTH 52 // (50 + 2)
-
-typedef bstring bt_authentication_parameter_ut_sig_t;
-
-int encode_bt_authentication_parameter_ut_sig_ie(
-  bt_authentication_parameter_ut_sig_t btauthenticationparameterutsig,
-  const bool iei_present,
-  uint8_t *buffer,
-  const uint32_t len);
-int decode_bt_authentication_parameter_ut_sig_ie(
-  bt_authentication_parameter_ut_sig_t *btauthenticationparameterutsig,
-  const bool iei_present,
-  uint8_t *buffer,
-  const uint32_t len);
-
 // RESPONSE
 #define BT_AUTHENTICATION_RESPONSE_PARAMETER_IE_TYPE 4
 #define BT_AUTHENTICATION_RESPONSE_PARAMETER_IE_MIN_LENGTH 3
@@ -572,8 +554,8 @@ int decode_bt_attach_parameter_ue_sig_ie(
 
 // ATTACH BR ID
 #define BT_ATTACH_PARAMETER_BR_ID_IE_TYPE 4
-#define BT_ATTACH_PARAMETER_BR_ID_IE_MIN_LENGTH 130 // (128 + 2)
-#define BT_ATTACH_PARAMETER_BR_ID_IE_MAX_LENGTH 130
+#define BT_ATTACH_PARAMETER_BR_ID_IE_MIN_LENGTH 8// 130 // (128 + 2)
+#define BT_ATTACH_PARAMETER_BR_ID_IE_MAX_LENGTH 8// 130
 
 typedef bstring bt_attach_parameter_br_id_t;
 

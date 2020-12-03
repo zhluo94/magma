@@ -210,9 +210,7 @@ class S1ApUtil(object):
         plain_text = bytearray(b'')
         plain_text.append(br_id)
         plain_text.extend(nonce)
-        brid = self.ut_rsa_pub_key.public_encrypt(plain_text, RSA.pkcs1_padding)
-        assert len(brid) == 128
-        return brid
+        return plain_text
 
     def attach(
         self,

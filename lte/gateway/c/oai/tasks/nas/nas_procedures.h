@@ -223,7 +223,6 @@ typedef struct nas_emm_auth_proc_s {
   // added for brokerd uTelco
   uint8_t br_ue_token[BR_UE_TOKEN_SIZE];
   uint8_t br_ue_token_br_sig[BR_UE_TOKEN_BR_SIG_SIZE];
-  uint8_t br_ue_token_ut_sig[BR_UE_TOKEN_UT_SIG_SIZE];
   bool is_broker;
 } nas_emm_auth_proc_t;
 

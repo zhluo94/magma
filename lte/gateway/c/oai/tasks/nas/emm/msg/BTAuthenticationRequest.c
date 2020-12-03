@@ -71,16 +71,6 @@ int decode_bt_authentication_request(
   else
     decoded += decoded_result;
 
-  if (
-    (decoded_result = decode_bt_authentication_parameter_ut_sig_ie(
-       &authentication_request->btauthenticationparameterutsig,
-       false,
-       buffer + decoded,
-       len - decoded)) < 0)
-    return decoded_result;
-  else
-    decoded += decoded_result;
-
   return decoded;
 }
 
@@ -117,16 +107,6 @@ int encode_bt_authentication_request(
   if (
     (encode_result = encode_bt_authentication_parameter_br_sig_ie(
        authentication_request->btauthenticationparameterbrsig,
-       0,
-       buffer + encoded,
-       len - encoded)) < 0) //Return in case of error
-    return encode_result;
-  else
-    encoded += encode_result;
-
-  if (
-    (encode_result = encode_bt_authentication_parameter_ut_sig_ie(
-       authentication_request->btauthenticationparameterutsig,
        0,
        buffer + encoded,
        len - encoded)) < 0) //Return in case of error

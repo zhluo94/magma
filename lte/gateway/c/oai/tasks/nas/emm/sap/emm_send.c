@@ -1945,15 +1945,6 @@ int emm_send_bt_authentication_request(
   if (!emm_msg->btauthenticationparameterbrsig) {
     OAILOG_FUNC_RETURN(LOG_NAS_EMM, RETURNerror);
   }
-  /*
-   * Mandatory - Authentication parameter UT_SIG
-   */
-  size += BT_AUTHENTICATION_PARAMETER_UT_SIG_IE_MAX_LENGTH;
-  emm_msg->btauthenticationparameterutsig = 
-    blk2bstr((const void *) msg->br_ue_token_ut_sig, BR_UE_TOKEN_UT_SIG_SIZE ); 
-  if (!emm_msg->btauthenticationparameterutsig) {
-    OAILOG_FUNC_RETURN(LOG_NAS_EMM, RETURNerror);
-  }
   OAILOG_FUNC_RETURN(LOG_NAS_EMM, size);
 }
 /****************************************************************************
@@ -1981,7 +1972,6 @@ void emm_free_send_bt_authentication_request(bt_authentication_request_msg *emm_
     LOG_NAS_EMM, "EMMAS-SAP - Freeing Send BT Authentication Request message\n");
   bdestroy(emm_msg->btauthenticationparametertoken);
   bdestroy(emm_msg->btauthenticationparameterbrsig);
-  bdestroy(emm_msg->btauthenticationparameterutsig);
   OAILOG_FUNC_OUT(LOG_NAS_EMM);
 }
 // added for UR

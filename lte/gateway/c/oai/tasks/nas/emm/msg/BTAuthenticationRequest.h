@@ -35,15 +35,13 @@
 #define BT_AUTHENTICATION_REQUEST_MINIMUM_LENGTH                                  \
   (NAS_KEY_SET_IDENTIFIER_MINIMUM_LENGTH +                                     \
    BT_AUTHENTICATION_PARAMETER_TOKEN_IE_MIN_LENGTH - 2 +                      \
-   BT_AUTHENTICATION_PARAMETER_BR_SIG_IE_MIN_LENGTH - 2 +                     \
-   BT_AUTHENTICATION_PARAMETER_UT_SIG_IE_MIN_LENGTH - 2 )
+   BT_AUTHENTICATION_PARAMETER_BR_SIG_IE_MIN_LENGTH - 2 )
 
 /* Maximum length macro. Formed by maximum length of each field */
 #define BT_AUTHENTICATION_REQUEST_MAXIMUM_LENGTH                                  \
   (NAS_KEY_SET_IDENTIFIER_MAXIMUM_LENGTH +                                     \
    BT_AUTHENTICATION_PARAMETER_TOKEN_IE_MAX_LENGTH +                           \
-   BT_AUTHENTICATION_PARAMETER_BR_SIG_IE_MAX_LENGTH +                          \
-   BT_AUTHENTICATION_PARAMETER_UT_SIG_IE_MAX_LENGTH )
+   BT_AUTHENTICATION_PARAMETER_BR_SIG_IE_MAX_LENGTH )
 
 /*
  * Message name: BT Authentication request
@@ -60,7 +58,6 @@ typedef struct bt_authentication_request_msg_tag {
   NasKeySetIdentifier naskeysetidentifierasme;
   bt_authentication_parameter_token_t btauthenticationparametertoken;
   bt_authentication_parameter_br_sig_t btauthenticationparameterbrsig;
-  bt_authentication_parameter_ut_sig_t btauthenticationparameterutsig;
 } bt_authentication_request_msg;
 
 int decode_bt_authentication_request(
