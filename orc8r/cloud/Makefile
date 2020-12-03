@@ -118,6 +118,12 @@ $(VET_LIST): %_vet:
 	make -C $*/cloud/go vet
 
 ##############################
+## Added for brokerd utelco ##
+##############################
+build_python:
+	make -C $(MAGMA_ROOT)/lte/cloud/python buildenv
+
+##############################
 ## Swagger/API docs Targets ##
 ##############################
 

@@ -70,6 +70,11 @@ static const char *_emm_sgs_detach_type_str[] = {"EPS",
                                                  "NW-INITIATED-EPS",
                                                  "NW-INITIATED-IMPLICIT-NONEPS",
                                                  "RESERVED"};
+
+//added 
+static int _emm_detach_success_usage_report_cb(emm_context_t *emm_context);
+static int _emm_start_detach_procedure(emm_context_t *emm_ctx, mme_ue_s1ap_id_t ue_id, emm_detach_request_ies_t *params);
+
 /*
  *  Detach Proc: Timer handler
  */
@@ -370,6 +375,28 @@ int emm_proc_detach_request(
     OAILOG_FUNC_RETURN(LOG_NAS_EMM, RETURNok);
   }
 
+  // added for UR
+  // create the detach procedure
+  nas_emm_detach_proc_t *detach_proc = get_nas_specific_procedure_detach(emm_ctx);
+  if (!detach_proc) {
+    detach_proc = nas_new_detach_procedure(emm_ctx);
+    AssertFatal(detach_proc, "TODO Handle this");
+      if ((detach_proc)) {
+      ((nas_base_proc_t *) detach_proc)->abort = NULL; // TODO
+      ((nas_base_proc_t *) detach_proc)->fail_in = NULL; // No parent procedure
+      ((nas_base_proc_t *) detach_proc)->time_out = NULL;
+      ((nas_base_proc_t *) detach_proc)->fail_out = NULL; // TODO
+    }
+  }
+  detach_proc->ies = params;
+  detach_proc->ue_id = ue_id;
+  if(emm_ctx->is_broker) {
+    rc = emm_proc_usage_report(emm_ctx, &detach_proc->emm_spec_proc, _emm_detach_success_usage_report_cb, _emm_detach_success_usage_report_cb); //use the same call back for now
+  } else {
+    rc = _emm_start_detach_procedure(emm_ctx, ue_id, params);
+  }
+  OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
+  // the following code is not executed
 
   if (params->switch_off) {
     increment_counter("ue_detach", 1, 1, "result", "success");
@@ -604,3 +631,86 @@ void free_emm_detach_request_ies(emm_detach_request_ies_t **const ies)
 /****************************************************************************/
 /*********************  L O C A L    F U N C T I O N S  *********************/
 /****************************************************************************/
+
+//------------------------------------------------------------------------------
+static int _emm_detach_success_usage_report_cb(emm_context_t *emm_context)
+{
+  OAILOG_FUNC_IN(LOG_NAS_EMM);
+  int rc = RETURNerror;
+
+  OAILOG_INFO(
+    LOG_NAS_EMM, "DETACH - Usage report procedure success!\n");
+  nas_emm_detach_proc_t *detach_proc =
+    get_nas_specific_procedure_detach(emm_context);
+
+  if (detach_proc) {
+    rc = _emm_start_detach_procedure(emm_context, detach_proc->ue_id, detach_proc->ies); //, IDENTITY_TYPE_2_IMSI, _emm_attach_authentified, _emm_attach_release);
+  }
+  OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
+}
+
+static int _emm_start_detach_procedure(emm_context_t *emm_ctx, mme_ue_s1ap_id_t ue_id, emm_detach_request_ies_t *params)
+{
+  int rc;
+  if (params->switch_off) {
+    increment_counter("ue_detach", 1, 1, "result", "success");
+    increment_counter("ue_detach", 1, 1, "action", "detach_accept_not_sent");
+    rc = RETURNok;
+  } else {
+    /*
+     * Normal detach without UE switch-off
+     */
+    emm_sap_t emm_sap = {0};
+    emm_as_data_t *emm_as = &emm_sap.u.emm_as.u.data;
+
+    /*
+     * Setup NAS information message to transfer
+     */
+    emm_as->nas_info = EMM_AS_NAS_DATA_DETACH_ACCEPT;
+    emm_as->nas_msg = NULL;
+    /*
+     * Set the UE identifier
+     */
+    emm_as->ue_id = ue_id;
+    /*
+     * Setup EPS NAS security data
+     */
+    emm_as_set_security_data(&emm_as->sctx, &emm_ctx->_security, false, true);
+    /*
+     * Notify EMM-AS SAP that Detach Accept message has to
+     * be sent to the network
+     */
+    emm_sap.primitive = EMMAS_DATA_REQ;
+    rc = emm_sap_send(&emm_sap);
+    increment_counter("ue_detach", 1, 1, "result", "success");
+    increment_counter("ue_detach", 1, 1, "action", "detach_accept_sent");
+    /*
+    * If Detach request is recieved for IMSI only then don't trigger session release and
+    * don't clear emm context return from here
+    */
+    if (params->type == EMM_DETACH_TYPE_IMSI) {
+      OAILOG_INFO(
+        LOG_NAS_EMM,
+        "Do not clear emm context for UE Initiated IMSI Detach Request "
+        " for the UE (ue_id=" MME_UE_S1AP_ID_FMT ")\n",
+        ue_id);
+      OAILOG_FUNC_RETURN(LOG_NAS_EMM, RETURNok);
+    }
+  }
+  if (rc != RETURNerror) {
+    emm_sap_t emm_sap = {0};
+
+    /*
+     * Notify EMM FSM that the UE has been implicitly detached
+     */
+    emm_sap.primitive = EMMREG_DETACH_REQ;
+    emm_sap.u.emm_reg.ue_id = ue_id;
+    emm_sap.u.emm_reg.ctx = emm_ctx;
+    rc = emm_sap_send(&emm_sap);
+    /* Notify MME APP to trigger Session release towards SGW and S1 signaling
+     * release towards S1AP.
+     */
+    mme_app_handle_detach_req(ue_id);
+  }
+  OAILOG_FUNC_RETURN(LOG_NAS_EMM, RETURNok);
+}

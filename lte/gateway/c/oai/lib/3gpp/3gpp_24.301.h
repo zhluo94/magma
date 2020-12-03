@@ -93,6 +93,9 @@
 // added for broker-uTelco
 #define BT_AUTHENTICATION_REQUEST 0b01110000   /* 112 = 0x70 */ 
 #define BT_AUTHENTICATION_RESPONSE 0b01110001   /* 113 = 0x71 */ 
+// added for UR
+#define USAGE_REPORT_REQUEST 0b01110010 /* 114 = 0x72 */ 
+#define USAGE_REPORT_RESPONSE 0b01110011 /* 115 = 0x73 */ 
 
 // Table 9.8.2: Message types for EPS session management
 #define ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST 0b11000001 /* 193 = 0xc1 */
@@ -418,5 +421,8 @@ typedef struct ue_security_capability_s {
 #define ESM_CAUSE_CONDITIONAL_IE_ERROR 100
 #define ESM_CAUSE_MESSAGE_NOT_COMPATIBLE 101
 #define ESM_CAUSE_PROTOCOL_ERROR 111
+
+// added for BT ULA
+#define ESM_CAUSE_BT_ULA_ANS_FAILS 112
 
 #endif /* FILE_3GPP_24_301_SEEN */

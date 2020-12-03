@@ -247,6 +247,7 @@ typedef struct emm_context_s {
   EC_KEY* ut_private_ecdsa;
   EC_KEY* br_public_ecdsa;
   int br_id; // broker id
+  bool is_broker;
 
   emm_security_context_t
     _security; /* Current EPS security context: The security context which has been activated most recently. Note that a current EPS

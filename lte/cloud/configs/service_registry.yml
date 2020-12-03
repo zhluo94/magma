@@ -15,3 +15,8 @@ services:
     host: "localhost"
     port: 9085
     proxy_type: "clientcert"
+
+  brokerd:
+    host: "localhost"
+    port: 9087
+    proxy_type: "clientcert"

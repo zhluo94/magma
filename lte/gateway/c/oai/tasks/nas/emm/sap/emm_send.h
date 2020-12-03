@@ -141,4 +141,8 @@ int emm_send_bt_authentication_request(
   const emm_as_security_t *msg,
   bt_authentication_request_msg *emm_msg);
 void emm_free_send_bt_authentication_request(bt_authentication_request_msg *emm_msg);
+// added for UR
+int emm_send_usage_report_request(
+  const emm_as_data_t *msg,
+  usage_report_request_msg *emm_msg);
 #endif /* FILE_EMM_SEND_SEEN*/

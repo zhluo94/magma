@@ -6,7 +6,8 @@ FROM ${baseImage} as base
 
 # Install the runtime deps from apt
 RUN apt-get update && \
-    apt-get install -y curl make git gcc bzr unzip vim
+    apt-get install -y curl make git gcc bzr unzip vim sudo virtualenv pkg-config \
+    python3-dev python3-pip libsystemd-dev libssl-dev
 
 # Install Golang 1.12
 WORKDIR /usr/local
@@ -18,7 +19,9 @@ ENV GO111MODULE on
 # Env variables for specifying the output directories
 ENV GOBIN /build/bin
 ENV PLUGIN_DIR /build/plugins
-ENV PATH ${PATH}:${GOBIN}
+ENV PYTHON_BUILD /build/python
+ENV PIP_CACHE_HOME ~/.pipcache
+ENV PATH ${PATH}:${GOBIN}:${PYTHON_BUILD}/bin
 # Use public go modules proxy
 ENV GOPROXY https://proxy.golang.org
 
@@ -49,7 +52,8 @@ RUN mkdir -p /src/modules
 WORKDIR /src/magma/orc8r/cloud
 RUN echo export INTERNAL_MAGMA_MODULES="\"`ls -d /src/magma/** | tr '\n' ' '`\"" >> /etc/profile.d/env.sh
 RUN echo export EXTERNAL_MAGMA_MODULES="\"`find /src/modules -maxdepth 2 -mindepth 2 -type d | tr '\n' ' '`\"" >> /etc/profile.d/env.sh
-RUN . /etc/profile.d/env.sh && echo export MAGMA_MODULES="\"$INTERNAL_MAGMA_MODULES $EXTERNAL_MAGMA_MODULES\"" >> /etc/profile.d/env.sh
+#RUN . /etc/profile.d/env.sh && echo export MAGMA_MODULES="\"$INTERNAL_MAGMA_MODULES $EXTERNAL_MAGMA_MODULES\"" >> /etc/profile.d/env.sh
+RUN . /etc/profile.d/env.sh && echo export MAGMA_MODULES="\"${MAGMA_ROOT}/orc8r ${MAGMA_ROOT}/lte\"" >> /etc/profile.d/env.sh
 RUN . /etc/profile.d/env.sh && make tools
 
 # ------------------------------------------------------------------------------
@@ -58,6 +62,9 @@ RUN . /etc/profile.d/env.sh && make tools
 FROM base as builder
 
 RUN . /etc/profile.d/env.sh && make build
+
+# added for brokerd utelco
+# RUN . /etc/profile.d/env.sh && make build_python
 
 # -----------------------------------------------------------------------------
 # Go-cache base image
@@ -68,7 +75,10 @@ COPY --from=builder /root/.cache /root/.cache
 # ------------------------------------------------------------------------------
 # Production image
 # ------------------------------------------------------------------------------
-FROM ubuntu:xenial
+# FROM ubuntu:xenial
+FROM base 
+# added for brokerd utelco
+RUN . /etc/profile.d/env.sh && make build_python
 
 # Install the runtime deps from apt
 RUN apt-get update && \
@@ -83,7 +93,8 @@ RUN /usr/local/bin/setup_swagger_ui
 # Create an empty envdir for overriding in production
 RUN mkdir -p /var/opt/magma/envdir
 # TODO: automatically read the services from the plugins
-ENV CONTROLLER_SERVICES STREAMER,SUBSCRIBERDB,POLICYDB,METRICSD,CERTIFIER,BOOTSTRAPPER,ACCESSD,OBSIDIAN,DISPATCHER,DIRECTORYD,FEG_RELAY,HEALTH,VPNSERVICE,STATE,DEVICE,ANALYTICS,TENANTS
+#env controller_services streamer,subscriberdb,policydb,metricsd,certifier,bootstrapper,accessd,obsidian,dispatcher,directoryd,feg_relay,health,vpnservice,state,device,analytics,tenants
+env controller_services streamer,subscriberdb,brokerd,policydb,metricsd,certifier,bootstrapper,accessd,obsidian,dispatcher,directoryd,state,device,tenants
 # TODO: fix dispatcher to work on containers
 ENV SERVICE_HOST_NAME localhost
 # TODO: fix metricsd for fetching host level metrics
@@ -98,6 +109,9 @@ COPY configs /etc/magma/configs
 COPY --from=builder /build/bin /var/opt/magma/bin
 COPY --from=builder /build/plugins /var/opt/magma/plugins
 COPY --from=builder /${CNTLR_FILES}/apidocs /var/opt/magma/static/apidocs
+
+# Copy the key files
+COPY src/magma/key_files /var/opt/magma/key_files
 
 # Copy the scripts from the context
 COPY ${CNTLR_FILES}/create_test_controller_certs /usr/local/bin/create_test_controller_certs

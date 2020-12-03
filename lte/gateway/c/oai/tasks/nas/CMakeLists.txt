@@ -61,6 +61,8 @@ set(libnas_emm_msg_OBJS
     ${CMAKE_CURRENT_SOURCE_DIR}/emm/msg/UplinkNasTransport.c
     ${CMAKE_CURRENT_SOURCE_DIR}/emm/msg/BTAuthenticationRequest.c
     ${CMAKE_CURRENT_SOURCE_DIR}/emm/msg/BTAuthenticationResponse.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/emm/msg/UsageReportRequest.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/emm/msg/UsageReportResponse.c
     )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/esm/msg)
@@ -163,6 +165,7 @@ set(libnas_mme_emm_OBJS
     ${CMAKE_CURRENT_SOURCE_DIR}/emm/TrackingAreaUpdate.c
     ${CMAKE_CURRENT_SOURCE_DIR}/emm/EmmCommon.c
     ${CMAKE_CURRENT_SOURCE_DIR}/emm/NasTransportHdl.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/emm/UsageReport.c
     )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/emm/sap)
@@ -231,7 +234,7 @@ find_package(OpenSSL)
 target_link_libraries(TASK_NAS
     COMMON
     LIB_BSTR LIB_HASHTABLE LIB_SECU LIB_3GPP
-    TASK_S1AP TASK_MME_APP TASK_SERVICE303 TASK_SGW TASK_S6A ${OPENSSL_LIBRARIES}
+    TASK_S1AP TASK_MME_APP TASK_SERVICE303 TASK_SGW TASK_S6A ${OPENSSL_LIBRARIES} LIB_SUB_PROXY
 )
 
 # TODO leak baby leak

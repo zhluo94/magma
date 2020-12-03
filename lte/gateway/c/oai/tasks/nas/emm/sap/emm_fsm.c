@@ -162,12 +162,15 @@ int emm_fsm_set_state(
         ue_id,
         _emm_fsm_status_str[emm_context->_emm_fsm_state],
         _emm_fsm_status_str[state]);
+      emm_fsm_state_t old_state = emm_context->_emm_fsm_state; // added for UR
       emm_context->_emm_fsm_state = state;
       emm_fsm_state_t new_emm_state = UE_UNREGISTERED;
       if (state == EMM_REGISTERED) {
         new_emm_state = UE_REGISTERED;
       } else if (state == EMM_DEREGISTERED) {
         new_emm_state = UE_UNREGISTERED;
+      } /* added for UR */ else if (state == EMM_COMMON_PROCEDURE_INITIATED && old_state == EMM_REGISTERED) {
+        new_emm_state = UE_REGISTERED;
       }
       // Update mme_ue_context's emm_state and overall stats
       mme_ue_context_update_ue_emm_state(ue_id, new_emm_state);

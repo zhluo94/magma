@@ -21,7 +21,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # - debian/contrib-jessie64
     # - linux kernel from debian jessie backports
     # - updated vbguest-tool
-    magma.vm.synced_folder "../../../key_files", "/home/vagrant/key_files"  # temporary location for key files
     magma.vm.box = "fbcmagma/magma_dev"
     magma.vm.hostname = "magma-dev"
     magma.vm.box_version = "1.0.1586316960"
@@ -83,8 +82,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.define :magma_test, autostart: false do |magma_test|
     # Get our prepackaged box from the atlas cloud
-    # magma_test.vm.synced_folder "../../../BTS1APTester", "/home/vagrant/S1APTester"  # used for local BTS1APTester
-    magma_test.vm.synced_folder "../../../key_files", "/home/vagrant/key_files"  # temporary location for key files
+    magma_test.vm.synced_folder "../../../BTS1APTester", "/home/vagrant/S1APTester"  # used for local BTS1APTester
     magma_test.vm.box = "fbcmagma/magma_test"
     magma_test.vm.hostname = "magma-test"
     magma_test.vm.box_version = "1.0.1581466527"

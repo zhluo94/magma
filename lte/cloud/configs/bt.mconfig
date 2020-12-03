@@ -1,0 +1,10 @@
+{
+  "configs_by_key": {
+    "subscriberdb": {
+      "@type": "type.googleapis.com/magma.mconfig.SubscriberDB",
+      "logLevel": "INFO",
+      "lteAuthOp": "EREREREREREREREREREREQ==",
+      "lteAuthAmf": "gAA="
+    }
+  }
+}

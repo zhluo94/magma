@@ -108,6 +108,8 @@ Description Defines EPS Mobility Management messages and functions used
 // Added for brokerd uTelco
 #include "BTAuthenticationResponse.h"
 #include "BTAuthenticationRequest.h"
+#include "UsageReportRequest.h"
+#include "UsageReportResponse.h"
 
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
@@ -156,6 +158,9 @@ typedef union {
   // added for uTelco
   bt_authentication_request_msg bt_authentication_request;   
   bt_authentication_response_msg bt_authentication_response; 
+  // added for UR
+  usage_report_request_msg usage_report_request;
+  usage_report_response_msg usage_report_response;
 } EMM_msg;
 
 /****************************************************************************/

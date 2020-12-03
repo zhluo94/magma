@@ -188,4 +188,11 @@ int emm_recv_bt_authentication_response(
   bt_authentication_response_msg *msg,
   int *emm_cause,
   const nas_message_decode_status_t *status);
+
+// added for UR
+int emm_recv_usage_report_response(
+  mme_ue_s1ap_id_t ue_id,
+  usage_report_response_msg *msg,
+  int *emm_cause,
+  const nas_message_decode_status_t *status);
 #endif /* FILE_EMM_RECV_SEEN*/

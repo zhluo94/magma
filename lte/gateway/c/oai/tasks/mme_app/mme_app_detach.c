@@ -50,6 +50,9 @@
 #include "s1ap_messages_types.h"
 #include "service303.h"
 #include "sgw_ie_defs.h"
+// added for brokerd utelco
+#include "subscriber_client_api.h"
+#include "conversions.h"
 
 #if EMBEDDED_SGW
 #define TASK_SPGW TASK_SPGW_APP
@@ -122,6 +125,14 @@ void mme_app_handle_detach_req(const mme_ue_s1ap_id_t ue_id) {
         LOG_MME_APP, "UE context doesn't exist -> Nothing to do :-) \n");
     OAILOG_FUNC_OUT(LOG_MME_APP);
   }
+  // added for brokerd utelco, to locally delete subscriber
+  emm_context_t *emm_ctx = &ue_context_p->emm_context;
+  if(emm_ctx->is_broker) {
+    char imsi_str[IMSI_BCD_DIGITS_MAX + 1];
+    IMSI_TO_STRING(&(emm_ctx->_imsi), imsi_str, IMSI_BCD_DIGITS_MAX + 1);
+    subscriber_del_sub(imsi_str);
+  }
+
   if ((!ue_context_p->mme_teid_s11) &&
       (!ue_context_p->nb_active_pdn_contexts)) {
     /* No Session.

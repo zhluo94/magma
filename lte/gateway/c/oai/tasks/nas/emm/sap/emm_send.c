@@ -1984,3 +1984,42 @@ void emm_free_send_bt_authentication_request(bt_authentication_request_msg *emm_
   bdestroy(emm_msg->btauthenticationparameterutsig);
   OAILOG_FUNC_OUT(LOG_NAS_EMM);
 }
+// added for UR
+/****************************************************************************
+ **                                                                        **
+ ** Name:    emm_send_usage_report_request()                         **
+ **                                                                        **
+ ** Description: Builds Usage Report Request message                     **
+ **                                                                        **
+ **      The Usage Report Request message is sent by the network **
+ **      to the UE to fetch UE-generated usage report.  **
+ **                                                                        **
+ ** Inputs:  msg:       The EMMAS-SAP primitive to process         **
+ **      Others:    None                                       **
+ **                                                                        **
+ ** Outputs:     emm_msg:   The EMM message to be sent                 **
+ **      Return:    The size of the EMM message                **
+ **      Others:    None                                       **
+ **                                                                        **
+ ***************************************************************************/
+int emm_send_usage_report_request(
+  const emm_as_data_t *msg,
+  usage_report_request_msg *emm_msg)
+{
+  OAILOG_FUNC_IN(LOG_NAS_EMM);
+  int size = EMM_HEADER_MAXIMUM_LENGTH;
+
+  OAILOG_INFO(LOG_NAS_EMM, "EMMAS-SAP - Send Usage Report Request message for ue_id = (%u)\n",
+    msg->ue_id);
+  /*
+   * Mandatory - Message type
+   */
+  emm_msg->messagetype = USAGE_REPORT_REQUEST; 
+  /*
+   * Mandatory - Report ID
+   */
+  size += USAGE_REPORT_PARAMETER_REPORT_ID_IE_MAX_LENGTH;
+  emm_msg->report_id = msg->ur_report_id;
+
+  OAILOG_FUNC_RETURN(LOG_NAS_EMM, size);
+}

@@ -13,7 +13,7 @@ log_level: INFO
 host_address: 0.0.0.0 # Bind to all interfaces
 
 # Enable streaming from the cloud for subscriber updates
-enable_streaming: True
+enable_streaming: False
 
 # Keep subscriberdb in a file.
 # Change filename to :memory: to store subscribers in memory.

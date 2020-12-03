@@ -12,18 +12,26 @@ from orc8r.protos.common_pb2 import Void
 from orc8r.protos.magmad_pb2_grpc import MagmadStub
 from orc8r.protos.mconfig import mconfigs_pb2
 
-from magma.common.service_registry import create_grpc_channel
+from magma.common.service_registry import create_grpc_channel, ServiceRegistry
 from magma.configuration.mconfigs import unpack_mconfig_any
+
+from integ_tests import sub_config
 
 
 def get_rpc_channel(service):
     """
     Returns a RPC channel to the service in the gateway.
     """
-    return create_grpc_channel(os.environ.get('GATEWAY_IP', '192.168.60.142'),
-                               os.environ.get('GATEWAY_PORT', '8443'),
-                               '%s.local' % service)
-
+    # return create_grpc_channel(os.environ.get('GATEWAY_IP', '192.168.60.142'),
+    #                           os.environ.get('GATEWAY_PORT', '8443'),
+    #                           '%s.local' % service)
+    # print(service, sub_config.use_orc8r)
+    if sub_config.use_orc8r and service == 'subscriberdb':
+        authority = '%s-%s' % (service, 'controller.magma.test')
+    else:
+        authority = '%s.local' % service
+    
+    return create_grpc_channel(os.environ.get('GATEWAY_IP', '192.168.60.142'), os.environ.get('GATEWAY_PORT', '8443'), authority)
 
 def get_gateway_hw_id():
     """

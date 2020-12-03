@@ -315,6 +315,18 @@ int emm_proc_bt_authentication_complete(
   int emm_cause,
   const_bstring const res);
 
+/* added for UR */
+int emm_proc_usage_report(
+  struct emm_context_s *emm_context,
+  nas_emm_specific_proc_t *const emm_specific_proc,
+  success_cb_t success,
+  failure_cb_t failure);
+
+int emm_proc_usage_report_response(
+  mme_ue_s1ap_id_t ue_id,
+  usage_report_response_msg *msg,
+  int emm_cause);
+
 int emm_attach_security(struct emm_context_s *emm_context);
 
 void set_notif_callbacks_for_auth_proc(nas_emm_auth_proc_t *auth_proc);

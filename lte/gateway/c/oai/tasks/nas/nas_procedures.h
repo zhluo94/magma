@@ -155,6 +155,7 @@ struct emm_detach_request_ies_s;
 typedef struct nas_emm_detach_proc_s {
   nas_emm_specific_proc_t emm_spec_proc;
   struct emm_detach_request_ies_s *ies;
+  mme_ue_s1ap_id_t ue_id; // added for UR
 } nas_emm_detach_proc_t;
 
 struct emm_tau_request_ies_s;
@@ -180,6 +181,7 @@ typedef enum {
   EMM_COMM_PROC_SMC,
   EMM_COMM_PROC_IDENT,
   EMM_COMM_PROC_INFO,
+  EMM_COMM_PROC_UR, // added for UR
 } emm_common_proc_type_t;
 
 // EMM Common procedures
@@ -258,6 +260,16 @@ typedef struct nas_emm_smc_proc_s {
 typedef struct nas_emm_info_proc_s {
   nas_emm_common_proc_t emm_com_proc;
 } nas_emm_info_proc_t;
+
+// added for brokerd uTelco
+typedef struct nas_emm_usage_report_proc_s {
+  nas_emm_common_proc_t emm_com_proc;
+  struct nas_timer_s T3460; /* Authentication timer         */
+#define USAGE_REPORT_COUNTER_MAX 5
+  mme_ue_s1ap_id_t ue_id;
+  unsigned int retransmission_count; /* Retransmission counter    */
+  unsigned int report_id; /* Report ID */
+} nas_emm_usage_report_proc_t;
 
 //------------------------------------------------------------------------------
 typedef enum {
@@ -412,6 +424,9 @@ bool is_nas_common_procedure_smc_running(
   const struct emm_context_s *const ctxt);
 bool is_nas_common_procedure_identification_running(
   const struct emm_context_s *const ctxt);
+// added for UR
+bool is_nas_common_procedure_usage_report_running(
+  const struct emm_context_s *const ctxt);
 
 nas_emm_guti_proc_t *get_nas_common_procedure_guti_realloc(
   const struct emm_context_s *const ctxt);
@@ -420,6 +435,9 @@ nas_emm_ident_proc_t *get_nas_common_procedure_identification(
 nas_emm_smc_proc_t *get_nas_common_procedure_smc(
   const struct emm_context_s *const ctxt);
 nas_emm_auth_proc_t *get_nas_common_procedure_authentication(
+  const struct emm_context_s *const ctxt);
+// added for UR
+nas_emm_usage_report_proc_t *get_nas_common_procedure_usage_report(
   const struct emm_context_s *const ctxt);
 
 nas_auth_info_proc_t *get_nas_cn_procedure_auth_info(
@@ -465,6 +483,10 @@ void nas_delete_cn_procedure(
 
 nas_emm_attach_proc_t *nas_new_attach_procedure(
   struct emm_context_s *const emm_context);
+// added for UR
+nas_emm_detach_proc_t *nas_new_detach_procedure(
+  struct emm_context_s *const emm_context);
+
 nas_emm_tau_proc_t *nas_new_tau_procedure(
   struct emm_context_s *const emm_context);
 nas_sr_proc_t *nas_new_service_request_procedure(
@@ -476,6 +498,9 @@ nas_emm_auth_proc_t *nas_new_authentication_procedure(
 nas_emm_smc_proc_t *nas_new_smc_procedure(
   struct emm_context_s *const emm_context);
 nas_auth_info_proc_t *nas_new_cn_auth_info_procedure(
+  struct emm_context_s *const emm_context);
+// added for UR
+nas_emm_usage_report_proc_t *nas_new_usage_report_procedure(
   struct emm_context_s *const emm_context);
 
 void nas_digest_msg(

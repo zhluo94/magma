@@ -112,6 +112,21 @@ def _create_build_context_if_necessary(args: argparse.Namespace) -> None:
     for module in _get_modules():
         _copy_module(module)
         modules.append(module.name)
+    
+    # added for brokerd utelco
+    for proto_dir in ['broker', 'feg']:
+        if os.path.isdir(os.path.join(HOST_MAGMA_ROOT, proto_dir, 'protos')):
+            shutil.copytree(
+                os.path.join(HOST_MAGMA_ROOT, proto_dir, 'protos'),
+                os.path.join(BUILD_CONTEXT, SRC_ROOT, GUEST_MAGMA_ROOT, proto_dir, 'protos'),
+            )
+    # copy key files
+    if os.path.isdir(os.path.join(HOST_MAGMA_ROOT, 'key_files')):
+        shutil.copytree(
+            os.path.join(HOST_MAGMA_ROOT, 'key_files'),
+            os.path.join(BUILD_CONTEXT, SRC_ROOT, GUEST_MAGMA_ROOT, 'key_files'),
+        ) 
+    
     print('Context created for modules: %s' % ', '.join(modules))
 
 
@@ -139,6 +154,7 @@ def _get_docker_build_args(args: argparse.Namespace) -> List[str]:
             ret.append('controller')
     if args.parallel:
         ret.append('--parallel')
+
     return ret
 
 
@@ -175,6 +191,13 @@ def _copy_module(module: MagmaModule) -> None:
         shutil.copytree(
             os.path.join(module.host_path, 'tools'),
             os.path.join(dst, 'tools'),
+        )
+
+    # added for brokerd utelco
+    if os.path.isdir(os.path.join(module.host_path, 'protos')):
+        shutil.copytree(
+            os.path.join(module.host_path, 'protos'),
+            os.path.join(dst, 'protos'),
         )
 
     if os.path.isdir(os.path.join(module.host_path, 'cloud', 'configs')):

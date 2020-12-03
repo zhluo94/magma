@@ -249,6 +249,17 @@ int emm_msg_decode(EMM_msg *msg, uint8_t *buffer, uint32_t len)
         &msg->bt_authentication_response, buffer, len);
       break;
 
+    // added for UR
+    case USAGE_REPORT_REQUEST: 
+      decode_result = decode_usage_report_request(
+        &msg->usage_report_request, buffer, len);
+      break;
+    
+    case USAGE_REPORT_RESPONSE: 
+      decode_result = decode_usage_report_response(
+        &msg->usage_report_response, buffer, len);
+      break;
+
     default:
       OAILOG_ERROR(
         LOG_NAS_EMM,
@@ -465,6 +476,17 @@ int emm_msg_encode(EMM_msg *msg, uint8_t *buffer, uint32_t len)
     case BT_AUTHENTICATION_RESPONSE: 
       encode_result =
         encode_bt_authentication_response(&msg->bt_authentication_response, buffer, len);
+      break;
+
+    // added for UR
+    case USAGE_REPORT_REQUEST: 
+      encode_result = 
+        encode_usage_report_request(&msg->usage_report_request, buffer, len);
+      break;
+    
+    case USAGE_REPORT_RESPONSE: 
+      encode_result = 
+        encode_usage_report_response(&msg->usage_report_response, buffer, len);
       break;
 
     default:

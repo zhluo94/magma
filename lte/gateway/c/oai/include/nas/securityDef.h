@@ -112,7 +112,8 @@ typedef struct {
 #define BR_ID_SIZE 1
 #define UE_UT_KEY_SIZE 32
 #define UT_BR_KEY_SIZE 32
-#define BR_UT_PLAIN_TOKEN_SIZE (BR_ID_SIZE + UE_UT_KEY_SIZE + UT_BR_KEY_SIZE )
+#define UE_SUB_SIZE 50 // TODO: fix this upper bound
+#define BR_UT_PLAIN_TOKEN_SIZE (BR_ID_SIZE + UE_UT_KEY_SIZE + UT_BR_KEY_SIZE + UE_SUB_SIZE)
 
 #define BR_UT_TOKEN_SIZE 128
 #define BR_UE_TOKEN_SIZE 128
@@ -120,6 +121,9 @@ typedef struct {
 #define BR_UE_TOKEN_BR_SIG_SIZE 50
 #define BR_UE_TOKEN_UT_SIG_SIZE 50
 #define NONCE_SIZE 5
+
+// added for UR
+#define UE_REPORT_SIZE 128
 
 typedef struct {
   uint8_t br_ut_token[BR_UT_TOKEN_SIZE];

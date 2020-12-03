@@ -77,9 +77,9 @@ void emm_main_initialize(const mme_config_t *mme_config_p)
 static void _read_ut_keys(void)
 {
   OAILOG_INFO(LOG_NAS_EMM, "EMM-MAIN  - read keys for utelco");
-  FILE * pub_br_ec_fp  = fopen("/home/vagrant/key_files/br_ec_pub.pem", "rb");
-  FILE * pri_ut_ec_fp  = fopen("/home/vagrant/key_files/ut_ec_pri.pem", "rb");
-  FILE * pri_ut_rsa_fp = fopen("/home/vagrant/key_files/ut_rsa_pri.pem", "rb");
+  FILE * pub_br_ec_fp  = fopen("/var/opt/magma/key_files/br_ec_pub.pem", "rb");
+  FILE * pri_ut_ec_fp  = fopen("/var/opt/magma/key_files/ut_ec_pri.pem", "rb");
+  FILE * pri_ut_rsa_fp = fopen("/var/opt/magma/key_files/ut_rsa_pri.pem", "rb");
   if(pub_br_ec_fp == NULL || pri_ut_ec_fp == NULL || pri_ut_rsa_fp == NULL) {
     OAILOG_ERROR(LOG_NAS_EMM, "EMM-MAIN  - can't open key files");
     return;

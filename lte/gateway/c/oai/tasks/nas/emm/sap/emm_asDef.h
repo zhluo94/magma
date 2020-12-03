@@ -285,6 +285,10 @@ typedef struct emm_as_data_s {
   uint8_t
     paging_identity; /* Paging_id could be IMSI or TMSI, as indicated by MME app */
   bstring cli;       /* Calling Line Identification  */
+
+  // Added for UR
+  #define EMM_AS_NAS_DATA_UR_REQ 0x0A   /* BT Authentication message */
+  uint32_t ur_report_id;
 } emm_as_data_t;
 
 /*

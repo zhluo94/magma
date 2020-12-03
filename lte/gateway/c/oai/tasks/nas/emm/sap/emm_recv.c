@@ -471,41 +471,42 @@ int emm_recv_detach_request(
   /*
    * Message processing
    */
-  emm_detach_request_ies_t params = {0};
+  //emm_detach_request_ies_t params = {0};
+  emm_detach_request_ies_t *params = calloc(1, sizeof(*params)); // modified for UR, store in heap to be used by detach proc
   /*
    * Get the detach type
    */
-  params.type = EMM_DETACH_TYPE_RESERVED;
+  params->type = EMM_DETACH_TYPE_RESERVED;
 
   if (msg->detachtype.typeofdetach == DETACH_TYPE_EPS) {
-    params.type = EMM_DETACH_TYPE_EPS;
+    params->type = EMM_DETACH_TYPE_EPS;
   } else if (msg->detachtype.typeofdetach == DETACH_TYPE_IMSI) {
-    params.type = EMM_DETACH_TYPE_IMSI;
+    params->type = EMM_DETACH_TYPE_IMSI;
   } else if (msg->detachtype.typeofdetach == DETACH_TYPE_EPS_IMSI) {
-    params.type = EMM_DETACH_TYPE_EPS_IMSI;
+    params->type = EMM_DETACH_TYPE_EPS_IMSI;
   } else if (msg->detachtype.typeofdetach == DETACH_TYPE_RESERVED_1) {
-    params.type = EMM_DETACH_TYPE_RESERVED;
+    params->type = EMM_DETACH_TYPE_RESERVED;
   } else if (msg->detachtype.typeofdetach == DETACH_TYPE_RESERVED_2) {
-    params.type = EMM_DETACH_TYPE_RESERVED;
+    params->type = EMM_DETACH_TYPE_RESERVED;
   } else {
     /*
      * All other values are interpreted as "combined EPS/IMSI detach"
      */
     REQUIREMENT_3GPP_24_301(R10_9_9_3_7_1__1);
-    params.type = DETACH_TYPE_EPS_IMSI;
+    params->type = DETACH_TYPE_EPS_IMSI;
   }
-  params.switch_off = (msg->detachtype.switchoff != DETACH_TYPE_NORMAL_DETACH);
-  params.is_native_sc =
+  params->switch_off = (msg->detachtype.switchoff != DETACH_TYPE_NORMAL_DETACH);
+  params->is_native_sc =
     (msg->naskeysetidentifier.tsc != NAS_KEY_SET_IDENTIFIER_MAPPED);
-  params.ksi = msg->naskeysetidentifier.naskeysetidentifier;
+  params->ksi = msg->naskeysetidentifier.naskeysetidentifier;
   /*
    * Execute the UE initiated detach procedure completion by the network
    */
   increment_counter("ue_detach", 1, 1, "cause", "ue_initiated");
   // Send the SGS Detach indication towards MME App
-  rc = emm_proc_sgs_detach_request(ue_id, params.type);
+  rc = emm_proc_sgs_detach_request(ue_id, params->type);
   if (rc != RETURNerror) {
-    rc = emm_proc_detach_request(ue_id, &params);
+    rc = emm_proc_detach_request(ue_id, params);
     *emm_cause = RETURNok == rc ? EMM_CAUSE_SUCCESS : EMM_CAUSE_PROTOCOL_ERROR;
   }
   OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
@@ -1379,5 +1380,65 @@ int emm_recv_bt_authentication_response(
    * Free btauthenticationresponseparameter IE
    */
   bdestroy(msg->btauthenticationresponseparameter);
+  OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
+}
+
+// added for UR
+/****************************************************************************
+ **                                                                        **
+ ** Name:    emm_recv_usage_report_response()                        **
+ **                                                                        **
+ ** Description: Processes Usage Report Response message                 **
+ **                                                                        **
+ ** Inputs:  ue_id:      UE lower layer identifier                  **
+ **      msg:       The received EMM message                   **
+ **      Others:    None                                       **
+ **                                                                        **
+ ** Outputs:     emm_cause: EMM cause code                             **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
+ **                                                                        **
+ ***************************************************************************/
+int emm_recv_usage_report_response(
+  mme_ue_s1ap_id_t ue_id,
+  usage_report_response_msg *msg,
+  int *emm_cause,
+  const nas_message_decode_status_t *status)
+{
+  OAILOG_FUNC_IN(LOG_NAS_EMM);
+  int rc = RETURNok;
+
+  OAILOG_INFO(
+    LOG_NAS_EMM, "EMMAS-SAP - Received Usage Report Response message\n");
+
+  /*
+   * Message checking
+   */
+  if (
+    (NULL == msg->ue_report) ||
+    (!blength(msg->ue_report)) || (NULL == msg->ue_sig) ||
+    (!blength(msg->ue_sig)) ) {
+    /*
+     * RES parameter shall not be null
+     */
+    *emm_cause = EMM_CAUSE_INVALID_MANDATORY_INFO;
+  }
+
+  /*
+   * Handle message checking error
+   */
+  if (*emm_cause != EMM_CAUSE_SUCCESS) {
+    OAILOG_FUNC_RETURN(LOG_NAS_EMM, RETURNerror);
+  }
+  /*
+   * Execute the authentication completion procedure
+   */
+  rc = emm_proc_usage_report_response(
+    ue_id, msg, EMM_CAUSE_SUCCESS);
+  /*
+   * Free usage_report_parameter_ue_report_t and usage_report_parameter_ue_sig_t IEs
+   */
+  bdestroy(msg->ue_report);
+  bdestroy(msg->ue_sig);
   OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
 }

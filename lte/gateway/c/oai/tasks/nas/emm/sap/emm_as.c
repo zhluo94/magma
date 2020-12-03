@@ -461,6 +461,16 @@ static int _emm_as_recv(
         ue_id, &emm_msg->bt_authentication_response, emm_cause, decode_status);
       break;
 
+    /* added for UR */
+    case USAGE_REPORT_RESPONSE:
+      REQUIREMENT_3GPP_24_301(
+        R10_4_4_4_3__1); // Integrity checking of NAS signalling messages in the MME
+      REQUIREMENT_3GPP_24_301(
+        R10_4_4_4_3__2); // Integrity checking of NAS signalling messages in the MME
+      rc = emm_recv_usage_report_response(
+        ue_id, &emm_msg->usage_report_response, emm_cause, decode_status);
+      break;
+      
     case AUTHENTICATION_FAILURE:
       REQUIREMENT_3GPP_24_301(
         R10_4_4_4_3__1); // Integrity checking of NAS signalling messages in the MME
@@ -1523,10 +1533,13 @@ static int _emm_as_data_req(
         size = emm_send_cs_service_notification(
           msg, &emm_msg->cs_service_notification);
         break;
-
       case EMM_AS_NAS_DATA_INFO_SR:
         size =
           emm_send_service_reject(*(msg->emm_cause), &emm_msg->service_reject);
+        break;
+      // added for UR
+      case EMM_AS_NAS_DATA_UR_REQ:
+        size = emm_send_usage_report_request(msg, &emm_msg->usage_report_request); 
         break;
 
       default:

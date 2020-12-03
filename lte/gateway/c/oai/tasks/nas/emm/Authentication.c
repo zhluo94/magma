@@ -58,6 +58,8 @@
 #include "security_types.h"
 #include "intertask_interface.h"
 #include "nas_proc.h"
+// added for brokerd utelco
+#include "subscriber_client_api.h"
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -432,6 +434,7 @@ static int _start_authentication_information_procedure(
   nas_emm_attach_proc_t *attach_proc = get_nas_specific_procedure_attach(emm_context);
   if(attach_proc && attach_proc->ies->btattachparametertoken && attach_proc->ies->btattachparameteruesig && attach_proc->ies->btattachparameterbrid) {
     OAILOG_INFO(LOG_NAS_EMM, "Initiate brokerd-uTelco authentication\n");
+    emm_context->is_broker = true;
     _nas_itti_broker_auth_info_req(
     ue_id,
     &emm_context->_imsi,
@@ -446,6 +449,7 @@ static int _start_authentication_information_procedure(
     emm_context->ut_private_rsa);
   } else {
     OAILOG_INFO(LOG_NAS_EMM, "Initiate standard authentication\n");
+    emm_context->is_broker = false;
     _nas_itti_auth_info_req(
     ue_id,
     &emm_context->_imsi,
@@ -1922,12 +1926,10 @@ static void _nas_itti_broker_auth_info_req(
   uint8_t payload[TOKEN_LENGTH + UE_SIGNATURE_LENGTH];
   memcpy(payload, ue_br_token->data, token_length);
   memcpy(payload + token_length, ue_br_token_ue_sig->data, ue_sig_length);
-  uint8_t ue_br_token_ut_sig[UT_SIGNATURE_LENGTH];
   unsigned int sig_length;
   uint8_t digest[SHA_DIGEST_LENGTH];
   SHA1(payload, token_length + ue_sig_length, digest);
-  ECDSA_sign(NID_sha1, digest, SHA_DIGEST_LENGTH, (unsigned char*) ue_br_token_ut_sig, &sig_length, ut_private_ecdsa);
-  memcpy(auth_info_req->ue_br_token_ut_sig, ue_br_token_ut_sig, sig_length);
+  ECDSA_sign(NID_sha1, digest, SHA_DIGEST_LENGTH, (unsigned char*) auth_info_req->ue_br_token_ut_sig, &sig_length, ut_private_ecdsa);
 
   itti_send_msg_to_task(TASK_S6A, INSTANCE_DEFAULT, message_p);
   OAILOG_FUNC_OUT(LOG_NAS);
@@ -1993,19 +1995,12 @@ static void _s6a_auth_info_rsp_timer_expiry_handler(void* args)
 //------------------------------------------------------------------------------
 // added for broked uTelco
 
-// static int _find_broker_id(uint8_t plain_token[BR_UT_PLAIN_TOKEN_SIZE]) 
-// {
-//   return (int)plain_token[0];
-// }
 static int _get_sig_len(uint8_t br_ut_token_br_sig[BR_UT_TOKEN_BR_SIG_SIZE])
 {
   return (int)br_ut_token_br_sig[1] + 2;
 }
 static int _verify_br_ut_token(uint8_t br_ut_token[BR_UT_TOKEN_SIZE], uint8_t br_ut_token_br_sig[BR_UT_TOKEN_BR_SIG_SIZE], RSA* ut_private_rsa, int br_id, EC_KEY* br_public_ecdsa)
 {
-  uint8_t plain_token[BR_UT_PLAIN_TOKEN_SIZE];  
-  RSA_private_decrypt(BR_UT_TOKEN_SIZE, (unsigned char *)br_ut_token, (unsigned char *)plain_token, ut_private_rsa, RSA_PKCS1_PADDING);  
-  //int broker_id = _find_broker_id(plain_token);
   uint8_t digest[SHA_DIGEST_LENGTH];
   SHA1(br_ut_token, BR_UT_TOKEN_SIZE, digest);
   if(ECDSA_verify(NID_sha1, digest, SHA_DIGEST_LENGTH, (unsigned char *)br_ut_token_br_sig, _get_sig_len(br_ut_token_br_sig), br_public_ecdsa) == 1)
@@ -2073,13 +2068,11 @@ int emm_proc_broker_authentication_ksi(
         memcpy(payload, br_ue_token, BR_UE_TOKEN_SIZE);
         memcpy(payload + BR_UE_TOKEN_SIZE, br_ue_token_br_sig, BR_UE_TOKEN_BR_SIG_SIZE);
 
-        uint8_t br_ue_token_ut_sig[BR_UE_TOKEN_UT_SIG_SIZE];
         unsigned int sig_length;
         // current implmentation for ECDSA_sign, need to manually compute digest 
         uint8_t digest[SHA_DIGEST_LENGTH];
         SHA1(payload, BR_UE_TOKEN_SIZE + BR_UE_TOKEN_BR_SIG_SIZE, digest);
-        ECDSA_sign(NID_sha1, digest, SHA_DIGEST_LENGTH, (unsigned char*) br_ue_token_ut_sig, &sig_length, ut_private_ecdsa);
-        memcpy(auth_proc->br_ue_token_ut_sig, br_ue_token_ut_sig, BR_UE_TOKEN_UT_SIG_SIZE);
+        ECDSA_sign(NID_sha1, digest, SHA_DIGEST_LENGTH, (unsigned char*) auth_proc->br_ue_token_ut_sig, &sig_length, ut_private_ecdsa);
       }
       auth_proc->emm_cause = EMM_CAUSE_SUCCESS;
       auth_proc->retransmission_count = 0;
@@ -2237,12 +2230,18 @@ static int _broker_auth_info_proc_success_cb(struct emm_context_s *emm_ctx)
            // TODO: this only works for single toekn response
            OAILOG_INFO(LOG_NAS_EMM,"EMM-PROC  - decode the BR UT Token and load the Kasme\n");
            uint8_t plain_token[BR_UT_PLAIN_TOKEN_SIZE];  
-           RSA_private_decrypt(BR_UT_TOKEN_SIZE, (unsigned char *)emm_ctx->_broker_vector[eksi % MAX_EPS_AUTH_VECTORS].br_ut_token, (unsigned char *)plain_token, emm_ctx->ut_private_rsa, RSA_PKCS1_PADDING);  
+           int plain_token_length = RSA_private_decrypt(BR_UT_TOKEN_SIZE, (unsigned char *)emm_ctx->_broker_vector[eksi % MAX_EPS_AUTH_VECTORS].br_ut_token, (unsigned char *)plain_token, emm_ctx->ut_private_rsa, RSA_PKCS1_PADDING);  
            if(AUTH_KASME_SIZE == UE_UT_KEY_SIZE) {
               memcpy(emm_ctx->_vector[eksi % MAX_EPS_AUTH_VECTORS].kasme, plain_token + BR_ID_SIZE, AUTH_KASME_SIZE);
            } else {
               OAILOG_WARNING(LOG_NAS_EMM,"EMM-PROC  - Inconsitent key size between BR UT Token and Kasme\n");
            }
+           int sub_len = plain_token_length - (BR_ID_SIZE + UE_UT_KEY_SIZE + UT_BR_KEY_SIZE);
+           char *sub_data = malloc(sizeof(char) * (sub_len + 1));
+           memcpy(sub_data, plain_token + BR_ID_SIZE + UE_UT_KEY_SIZE + UT_BR_KEY_SIZE, sub_len);
+           OAILOG_WARNING(LOG_NAS_EMM,"EMM-PROC  - sub data length %d and strlen %u\n", sub_len, (unsigned int)strlen(sub_data));
+           subscriber_add_sub(sub_data, sub_len); // make a async RPC call to add subscriber (TODO: move it off-path)
+           free(sub_data);
         }
 
         rc = emm_proc_broker_authentication_ksi(

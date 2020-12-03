@@ -40,6 +40,10 @@ from M2Crypto import EC, RSA
 from hashlib import sha1
 from random import getrandbits
 
+import time
+
+from os.path import expanduser
+
 DEFAULT_GRPC_TIMEOUT = 10
 
 
@@ -102,10 +106,10 @@ class S1ApUtil(object):
         # Maintain a map of UE IDs to IPs
         self._ue_ip_map = {}
         
-        # added for brokerd utelco (TODO: fix the absolute path)
-        self.br_rsa_pub_key =  RSA.load_pub_key('/home/vagrant/key_files/br_rsa_pub.pem')
-        self.ue_ecdsa_pri_key = EC.load_key('/home/vagrant/key_files/ue_ec_pri.pem')
-        self.ut_rsa_pub_key = RSA.load_pub_key('/home/vagrant/key_files/ut_rsa_pub.pem')
+        # added for brokerd utelco 
+        self.br_rsa_pub_key =  RSA.load_pub_key(expanduser('~/key_files/br_rsa_pub.pem'))
+        self.ue_ecdsa_pri_key = EC.load_key(expanduser('~/key_files/ue_ec_pri.pem'))
+        self.ut_rsa_pub_key = RSA.load_pub_key(expanduser('~/key_files/ut_rsa_pub.pem'))
 
     def cleanup(self):
         """
@@ -200,7 +204,6 @@ class S1ApUtil(object):
         token = self.br_rsa_pub_key.public_encrypt(plain_text, RSA.pkcs1_padding)
         sig = self.ue_ecdsa_pri_key.sign_dsa_asn1(sha1(token).digest())
         assert len(token) == 128 and len(sig) <= 50, (len(token),len(sig))
-        print('nonce {} {}'.format(nonce[0], nonce[-1]))
         return token, sig
 
     def get_br_id(self, br_id, nonce):
@@ -241,6 +244,7 @@ class S1ApUtil(object):
                 type, defaults to s1ap_types.TFW_EPS_ATTACH_TYPE_EPS_ATTACH.
             pdn_type:1 for IPv4, 2 for IPv6 and 3 for IPv4v6
             pcscf_addr_type:IPv4/IPv6/IPv4v6
+            use_broker: true for BT authentication
         """
         attach_req = s1ap_types.ueAttachRequest_t()
         attach_req.ue_Id = ue_id
@@ -256,7 +260,6 @@ class S1ApUtil(object):
             token, sig = self.get_token_sig(ue_id, 0, nonce)
             attach_req.btattachparametertoken.pres = True
             attach_req.btattachparametertoken.len  = len(token)
-            print(type(token))
             attach_req.btattachparametertoken.token = (ctypes.c_uint8*len(token)).from_buffer(bytearray(token))            
             attach_req.btattachparameteruesig.pres = True
             attach_req.btattachparameteruesig.len = len(sig)
@@ -276,9 +279,11 @@ class S1ApUtil(object):
         # Populate PCO only if pcscf_addr_type is set
         if pcscf_addr_type:
             self.populate_pco(attach_req.protCfgOpts_pr, pcscf_addr_type)
+        start = time.time()
         assert self.issue_cmd(attach_type, attach_req) == 0
 
         response = self.get_response()
+        end = time.time()
 
         # The MME actually sends INT_CTX_SETUP_IND and UE_ATTACH_ACCEPT_IND in
         # one message, but the s1aptester splits it and sends the tests 2
@@ -311,7 +316,7 @@ class S1ApUtil(object):
                     self._ue_ip_map[ue_id] = ip
             else:
                 raise ValueError("PDN TYPE %s not supported" % pdn_type)
-        return msg
+        return msg, (end - start)*1e3
 
     def receive_emm_info(self):
         response = self.get_response()
@@ -330,7 +335,7 @@ class S1ApUtil(object):
         assert self.issue_cmd(s1ap_types.tfwCmd.UE_DETACH_REQUEST, detach_req) == 0
         if reason_type == s1ap_types.ueDetachType_t.UE_NORMAL_DETACH.value:
             response = self.get_response()
-            assert s1ap_types.tfwCmd.UE_DETACH_ACCEPT_IND.value == response.msg_type
+            assert s1ap_types.tfwCmd.UE_DETACH_ACCEPT_IND.value == response.msg_type, (s1ap_types.tfwCmd.UE_DETACH_ACCEPT_IND.value, response.msg_type)
 
         # Now wait for the context release response
         if wait_for_s1_ctxt_release:

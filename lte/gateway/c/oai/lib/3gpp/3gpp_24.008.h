@@ -411,7 +411,11 @@ typedef enum mobility_managenent_ie_e {
   MM_BT_AUTHENTICATION_RESPONSE_PARAMETER_IEI = 0x68, /* 0x68 = 104 */
   ATTACH_REQUEST_BT_ATTACH_PARAMETER_TOKEN_IEI = 0x69,  /* 0x69 = 105 */
   ATTACH_REQUEST_BT_ATTACH_PARAMETER_UE_SIG_IEI = 0x6a,  /* 0x6a = 106 */
-  ATTACH_REQUEST_BT_ATTACH_PARAMETER_BR_ID_IEI = 0x6b,  /* 0x6a = 106 */
+  ATTACH_REQUEST_BT_ATTACH_PARAMETER_BR_ID_IEI = 0x6b,  /* 0x6b = 107 */
+  // added for UR
+  MM_USAGE_REPORT_PARAMETER_REPORT_ID_IEI = 0x6c, /* 0x6c = 108 */
+  MM_USAGE_REPORT_PARAMETER_UE_REPORT_IEI = 0x6d, /* 0x6d = 109 */
+  MM_USAGE_REPORT_PARAMETER_UE_SIG_IEI = 0x6e, /* 0x6e = 110 */
 } mobility_managenent_ie_t;
 
 //------------------------------------------------------------------------------
@@ -580,6 +584,61 @@ int encode_bt_attach_parameter_br_id_ie(
   const uint32_t len);
 int decode_bt_attach_parameter_br_id_ie(
   bt_attach_parameter_br_id_t *btattachparameterbrid,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+
+// added for UR 
+// REPORT ID
+#define USAGE_REPORT_PARAMETER_REPORT_ID_IE_TYPE 4
+#define USAGE_REPORT_PARAMETER_REPORT_ID_IE_MIN_LENGTH 6 // (4 + 2)
+#define USAGE_REPORT_PARAMETER_REPORT_ID_IE_MAX_LENGTH 6 // (4 + 2)
+
+typedef uint32_t usage_report_parameter_report_id_t;
+
+int encode_usage_report_parameter_report_id_ie(
+  usage_report_parameter_report_id_t usagereportparameterreportid,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+int decode_usage_report_parameter_report_id_ie(
+  usage_report_parameter_report_id_t *usagereportparameterreportid,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+
+// UE REPORT
+#define USAGE_REPORT_PARAMETER_UE_REPORT_IE_TYPE 4
+#define USAGE_REPORT_PARAMETER_UE_REPORT_IE_MIN_LENGTH 130 // (128 + 2)
+#define USAGE_REPORT_PARAMETER_UE_REPORT_IE_MAX_LENGTH 130 // (128 + 2)
+
+typedef bstring usage_report_parameter_ue_report_t;
+
+int encode_usage_report_parameter_ue_report_ie(
+  usage_report_parameter_ue_report_t usagereportparameteruereport,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+int decode_usage_report_parameter_ue_report_ie(
+  usage_report_parameter_ue_report_t *usagereportparameteruereport,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+
+// UE SIG
+#define USAGE_REPORT_PARAMETER_UE_SIG_IE_TYPE 4
+#define USAGE_REPORT_PARAMETER_UE_SIG_IE_MIN_LENGTH 47 // (45 + 2)
+#define USAGE_REPORT_PARAMETER_UE_SIG_IE_MAX_LENGTH 52 // (50 + 2)
+
+typedef bstring usage_report_parameter_ue_sig_t;
+
+int encode_usage_report_parameter_ue_sig_ie(
+  usage_report_parameter_ue_sig_t usagereportparameteruesig,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len);
+int decode_usage_report_parameter_ue_sig_ie(
+  usage_report_parameter_ue_sig_t *usagereportparameteruesig,
   const bool iei_present,
   uint8_t *buffer,
   const uint32_t len);

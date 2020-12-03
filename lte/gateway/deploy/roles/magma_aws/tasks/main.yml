@@ -86,6 +86,30 @@
   file: path=/var/www/local-cdn/store state=directory
   when: full_provision
 
+# added for brokerd uTelco
+- name: Create the /var/opt/magma/key_files directory
+  file: path=/var/opt/magma/key_files state=directory
+  when: full_provision
+
+- name: Copy the key files
+  copy:
+    src: 'key_files/{{ item }}'
+    dest: /var/opt/magma/key_files/{{ item }}
+  with_items:
+    - br_ec_pri.pem
+    - br_ec_pub.pem
+    - br_rsa_pri.pem
+    - br_rsa_pub.pem
+    - ue_ec_pri.pem
+    - ue_ec_pub.pem
+    - ue_rsa_pri.pem
+    - ue_rsa_pub.pem
+    - ut_ec_pri.pem
+    - ut_ec_pub.pem
+    - ut_rsa_pri.pem
+    - ut_rsa_pub.pem
+  when: full_provision
+
 - name: Add Magma package directory
   become: no
   file:

@@ -692,6 +692,205 @@ int encode_bt_attach_parameter_br_id_ie(
   *lenPtr = encoded - 1 - ((iei_present) ? 1 : 0);
   return encoded;
 }
+// for UR report id
+int decode_usage_report_parameter_report_id_ie(
+  usage_report_parameter_report_id_t *usagereportparameterreportid,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  OAILOG_FUNC_IN(LOG_NAS);
+  int decoded = 0;
+  uint8_t ielen = 0;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, USAGE_REPORT_PARAMETER_REPORT_ID_IE_MIN_LENGTH, len);
+    CHECK_IEI_DECODER(MM_USAGE_REPORT_PARAMETER_REPORT_ID_IEI, *buffer);
+    decoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, (USAGE_REPORT_PARAMETER_REPORT_ID_IE_MIN_LENGTH - 1), len);
+  }
+
+  ielen = *(buffer + decoded);
+  decoded++;
+  CHECK_LENGTH_DECODER(len - decoded, ielen);
+
+  usagereportparameterreportid = (usage_report_parameter_report_id_t*) (buffer + decoded);
+  decoded += ielen;
+
+  OAILOG_FUNC_RETURN(LOG_NAS, decoded);
+} 
+//------------------------------------------------------------------------------
+int encode_usage_report_parameter_report_id_ie(
+  usage_report_parameter_report_id_t usagereportparameterreportid,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  uint8_t *lenPtr;
+  uint32_t encoded = 0;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, USAGE_REPORT_PARAMETER_REPORT_ID_IE_MAX_LENGTH, len);
+    *buffer = MM_USAGE_REPORT_PARAMETER_REPORT_ID_IEI; 
+    encoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, (USAGE_REPORT_PARAMETER_REPORT_ID_IE_MAX_LENGTH - 1), len);
+  }
+
+  lenPtr = (buffer + encoded);
+  encoded++;
+
+  memcpy((void *) (buffer + encoded), (void *) &usagereportparameterreportid, sizeof(usage_report_parameter_report_id_t));
+  encoded += sizeof(usage_report_parameter_report_id_t);
+
+  *lenPtr = encoded - 1 - ((iei_present) ? 1 : 0);
+  return encoded;
+}
+// for UR ue report
+int decode_usage_report_parameter_ue_report_ie(
+  usage_report_parameter_ue_report_t *usagereportparameteruereport,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  OAILOG_FUNC_IN(LOG_NAS);
+  int decoded = 0;
+  uint8_t ielen = 0;
+  int decode_result;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, USAGE_REPORT_PARAMETER_UE_REPORT_IE_MIN_LENGTH, len);
+    CHECK_IEI_DECODER(MM_USAGE_REPORT_PARAMETER_UE_REPORT_IEI, *buffer);
+    decoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, (USAGE_REPORT_PARAMETER_UE_REPORT_IE_MIN_LENGTH - 1), len);
+  }
+
+  ielen = *(buffer + decoded);
+  decoded++;
+  CHECK_LENGTH_DECODER(len - decoded, ielen);
+
+  if (
+    (decode_result = decode_bstring(
+       usagereportparameteruereport, ielen, buffer + decoded, len - decoded)) < 0) {
+    OAILOG_ERROR(LOG_NAS, "Fails decoding ue report");
+    OAILOG_FUNC_RETURN(LOG_NAS, decode_result);
+  } else
+    decoded += decode_result;
+
+  OAILOG_FUNC_RETURN(LOG_NAS, decoded);
+} 
+//------------------------------------------------------------------------------
+int encode_usage_report_parameter_ue_report_ie(
+  usage_report_parameter_ue_report_t usagereportparameteruereport,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  uint8_t *lenPtr;
+  uint32_t encoded = 0;
+  int encode_result;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, USAGE_REPORT_PARAMETER_UE_REPORT_IE_MAX_LENGTH, len);
+    *buffer = MM_USAGE_REPORT_PARAMETER_UE_REPORT_IEI; 
+    encoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, (USAGE_REPORT_PARAMETER_UE_REPORT_IE_MAX_LENGTH - 1), len);
+  }
+
+  lenPtr = (buffer + encoded);
+  encoded++;
+
+  if (
+    (encode_result = encode_bstring(
+       usagereportparameteruereport, buffer + encoded, len - encoded)) < 0)
+    return encode_result;
+  else
+    encoded += encode_result;
+
+  *lenPtr = encoded - 1 - ((iei_present) ? 1 : 0);
+  return encoded;
+}
+// for UR ue sig
+int decode_usage_report_parameter_ue_sig_ie(
+  usage_report_parameter_ue_sig_t *usagereportparameteruesig,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  OAILOG_FUNC_IN(LOG_NAS);
+  int decoded = 0;
+  uint8_t ielen = 0;
+  int decode_result;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, USAGE_REPORT_PARAMETER_UE_SIG_IE_MIN_LENGTH, len);
+    CHECK_IEI_DECODER(MM_USAGE_REPORT_PARAMETER_UE_SIG_IEI, *buffer);
+    decoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_DECODER(
+      buffer, (USAGE_REPORT_PARAMETER_UE_SIG_IE_MIN_LENGTH - 1), len);
+  }
+
+  ielen = *(buffer + decoded);
+  decoded++;
+  CHECK_LENGTH_DECODER(len - decoded, ielen);
+
+  if (
+    (decode_result = decode_bstring(
+       usagereportparameteruesig, ielen, buffer + decoded, len - decoded)) < 0) {
+    OAILOG_ERROR(LOG_NAS, "Fails decoding ue sig");
+    OAILOG_FUNC_RETURN(LOG_NAS, decode_result);
+  } else
+    decoded += decode_result;
+
+  OAILOG_FUNC_RETURN(LOG_NAS, decoded);
+} 
+//------------------------------------------------------------------------------
+int encode_usage_report_parameter_ue_sig_ie(
+  usage_report_parameter_ue_sig_t usagereportparameteruesig,
+  const bool iei_present,
+  uint8_t *buffer,
+  const uint32_t len)
+{
+  uint8_t *lenPtr;
+  uint32_t encoded = 0;
+  int encode_result;
+
+  if (iei_present) {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, USAGE_REPORT_PARAMETER_UE_SIG_IE_MAX_LENGTH, len);
+    *buffer = MM_USAGE_REPORT_PARAMETER_UE_SIG_IEI; 
+    encoded++;
+  } else {
+    CHECK_PDU_POINTER_AND_LENGTH_ENCODER(
+      buffer, (USAGE_REPORT_PARAMETER_UE_SIG_IE_MAX_LENGTH - 1), len);
+  }
+
+  lenPtr = (buffer + encoded);
+  encoded++;
+
+  if (
+    (encode_result = encode_bstring(
+       usagereportparameteruesig, buffer + encoded, len - encoded)) < 0)
+    return encode_result;
+  else
+    encoded += encode_result;
+
+  *lenPtr = encoded - 1 - ((iei_present) ? 1 : 0);
+  return encoded;
+}
 //------------------------------------------------------------------------------
 //ended for brokered-uTelco
 //------------------------------------------------------------------------------
