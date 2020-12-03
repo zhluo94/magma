@@ -35,6 +35,7 @@ class SqliteStore(BaseStore):
         self._tlocal = threading.local()
         self._create_store()
         self._on_ready = OnDataReady(loop=loop)
+        self.delete_all_subscribers()
 
     @property
     def conn(self):
