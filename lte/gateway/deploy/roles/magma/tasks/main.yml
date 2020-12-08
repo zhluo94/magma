@@ -179,6 +179,14 @@
   retries: 5
   when: preburn
 
+- name: Install additional dependencies
+  apt:
+    state: present
+    pkg:
+      - swig # Needed for M2Crypto (sometimes...)
+  retries: 5
+  when: full_provision
+
 - name: Copy the gtp interface initialization definition
   copy:
     src: magma_ifaces_gtp
