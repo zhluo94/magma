@@ -75,40 +75,50 @@ class BrokerdRpcServicer(brokerd_pb2_grpc.BrokerdServicer):
         self.br_ecdsa_pri_key =  EC.load_key(os.path.join(key_dir, 'br_ec_pri.pem'))
         self.ue_rsa_pub_key = RSA.load_pub_key(os.path.join(key_dir, 'ue_rsa_pub.pem'))
         self.ue_ecdsa_pub_key = EC.load_pub_key(os.path.join(key_dir, 'ue_ec_pub.pem'))
-        self.ut_rsa_pub_key = RSA.load_pub_key(os.path.join(key_dir, 'ut_rsa_pub.pem'))
-        self.ut_ecdsa_pub_key = EC.load_pub_key(os.path.join(key_dir, 'ut_ec_pub.pem'))
+        self.utg_rsa_pub_key = RSA.load_pub_key(os.path.join(key_dir, 'utg_rsa_pub.pem'))
+        self.utg_ecdsa_pub_key = EC.load_pub_key(os.path.join(key_dir, 'utg_ec_pub.pem'))
         self.br_id = 0
         logging.info("done loading broker keys")
 
     def add_to_server(self, server):
         brokerd_pb2_grpc.add_BrokerdServicer_to_server(self, server)
 
-    def getBrokerAuthenticationInformationAnswer(self, ue_id, ut_id, nonce, sub_data):
+    def getBrokerAuthenticationInformationAnswer(self, ue_id, utg_id, nonce, sub_data):
         aia = brokerd_pb2.BrokerAuthenticationInformationAnswer()
         aia.error_code = s6a_proxy_pb2.SUCCESS
-        aia.br_auth_vectors.extend([self.getBrokerAuthVector(ue_id, ut_id, nonce, sub_data)])
+        aia.br_auth_vectors.extend([self.getBrokerAuthVector(ue_id, utg_id, nonce, sub_data)])
         logging.info("Auth Msg Received")
         return aia
 
-    def getBrokerAuthVector(self, ue_id, ut_id, nonce, sub_data):
+    def getBrokerAuthVector(self, ue_id, utg_id, nonce, sub_data):
         session_key_size = 32
-        ss_ut_br = bytearray(getrandbits(8) for _ in range(session_key_size))
+        ss_utg_br = bytearray(getrandbits(8) for _ in range(session_key_size))
         ss_ue_br = bytearray(getrandbits(8) for _ in range(session_key_size))
-        ss_ue_ut = bytearray(getrandbits(8) for _ in range(session_key_size))
+        ss_ue_utg = bytearray(getrandbits(8) for _ in range(session_key_size))
         br_ue_plain_text = bytearray(b'')
         br_ue_plain_text.append(self.br_id)
-        br_ue_plain_text.append(ut_id)
-        br_ue_plain_text.extend(ss_ue_ut)
+        br_ue_plain_text.append(utg_id)
+        br_ue_plain_text.extend(ss_ue_utg)
         br_ue_plain_text.extend(ss_ue_br)
         br_ue_plain_text.extend(nonce)
+        
+        #Generate reusable token for UE
+        sub_token = bytearray()
+        sub_token.extend(sub_data.SerializeToString())
+        token_id = os.urandom(16)
+        sub_token.extend(token_id)
+        sub_token_sig = self.br_ecdsa_pri_key.sign_dsa_asn1(sha1(sub_token).digest())
+        br_ue_plain_text.extend(sub_token)
+        br_ue_plain_text.extend(sub_token_sig)
 
         br_ut_plain_text = bytearray(b'')
         br_ut_plain_text.append(self.br_id)
-        br_ut_plain_text.extend(ss_ue_ut)
-        br_ut_plain_text.extend(ss_ut_br)
+        br_ut_plain_text.extend(ss_ue_utg)
+        br_ut_plain_text.extend(ss_utg_br)
         br_ut_plain_text.extend(sub_data.SerializeToString()) # sub_data info
+        br_ut_plain_text.extend(token_id)
         v = brokerd_pb2.BrokerAuthenticationInformationAnswer.BrokerAuthVector()
-        v.br_ut_token = self.ut_rsa_pub_key.public_encrypt(br_ut_plain_text, RSA.pkcs1_padding)
+        v.br_ut_token = self.utg_rsa_pub_key.public_encrypt(br_ut_plain_text, RSA.pkcs1_padding)
         v.br_ut_token_br_sig = self.br_ecdsa_pri_key.sign_dsa_asn1(sha1(v.br_ut_token).digest())
         v.br_ue_token = self.ue_rsa_pub_key.public_encrypt(br_ue_plain_text, RSA.pkcs1_padding)
         v.br_ue_token_br_sig = self.br_ecdsa_pri_key.sign_dsa_asn1(sha1(v.br_ue_token).digest())
@@ -125,11 +135,11 @@ class BrokerdRpcServicer(brokerd_pb2_grpc.BrokerdServicer):
         myhash = sha1()
         ue_br_token = request.ue_br_token
         ue_br_token_ue_sig = request.ue_br_token_ue_sig[:request.ue_br_token_ue_sig[1] + 2]
-        ue_br_token_ut_sig = request.ue_br_token_ut_sig[:request.ue_br_token_ut_sig[1] + 2]
+        ue_br_token_utg_sig = request.ue_br_token_ut_sig[:request.ue_br_token_ut_sig[1] + 2]
         # verify token
         plain_token = self.br_rsa_pri_key.private_decrypt(request.ue_br_token, RSA.pkcs1_padding)
         ue_id = plain_token[0]
-        ut_id = plain_token[1]
+        utg_id = plain_token[1]
         nonce = plain_token[2:]
         # verify ue signature
         myhash.update(ue_br_token)
@@ -142,7 +152,7 @@ class BrokerdRpcServicer(brokerd_pb2_grpc.BrokerdServicer):
             logging.info('Done verifying UE signature')
         # verify ut signature
         myhash.update(ue_br_token_ue_sig)
-        if not self.ut_ecdsa_pub_key.verify_dsa_asn1(myhash.digest(), ue_br_token_ut_sig):
+        if not self.utg_ecdsa_pub_key.verify_dsa_asn1(myhash.digest(), ue_br_token_utg_sig):
             logging.error('Unable to verify UT signature')
             context.set_code(grpc.StatusCode.NOT_FOUND)
             context.set_details('Failed to verify UT signature')
@@ -177,7 +187,7 @@ class BrokerdRpcServicer(brokerd_pb2_grpc.BrokerdServicer):
             context.set_details('Failed to get subscriber data in broker')
             return Void()
 
-        bt_aia = self.getBrokerAuthenticationInformationAnswer(ue_id, ut_id, nonce, sub_data)
+        bt_aia = self.getBrokerAuthenticationInformationAnswer(ue_id, utg_id, nonce, sub_data)
         
         end = time.time()
         logging.error('BT authentication servicer takes: {} ms'.format((end - start)*1e3))
