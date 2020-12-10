@@ -75,8 +75,8 @@ class BrokerdRpcServicer(brokerd_pb2_grpc.BrokerdServicer):
         self.br_ecdsa_pri_key =  EC.load_key(os.path.join(key_dir, 'br_ec_pri.pem'))
         self.ue_rsa_pub_key = RSA.load_pub_key(os.path.join(key_dir, 'ue_rsa_pub.pem'))
         self.ue_ecdsa_pub_key = EC.load_pub_key(os.path.join(key_dir, 'ue_ec_pub.pem'))
-        self.utg_rsa_pub_key = RSA.load_pub_key(os.path.join(key_dir, 'utg_rsa_pub.pem'))
-        self.utg_ecdsa_pub_key = EC.load_pub_key(os.path.join(key_dir, 'utg_ec_pub.pem'))
+        self.utg_rsa_pub_key = RSA.load_pub_key(os.path.join(key_dir, 'ut_rsa_pub.pem'))
+        self.utg_ecdsa_pub_key = EC.load_pub_key(os.path.join(key_dir, 'ut_ec_pub.pem'))
         self.br_id = 0
         logging.info("done loading broker keys")
 
