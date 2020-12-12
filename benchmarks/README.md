@@ -2,7 +2,7 @@
 
 
 ### Setup
-* AMI: `ami-0cba296a06aa1bb90` (perfd-cellular)
+* AMI: `ami-0cba296a06aa1bb90` (perfd-cellular, us-west-1)
 * The AMI has MPTCP (v0.94) enabled
 * The AMI includes mobile applications (more to be added in the long run) with datasets and scripts to start benchmarking, described in what follows. 
 * Multimedia communication (e.g. SIP, RTP): [PJSIP](https://github.com/pjsip/pjproject)
