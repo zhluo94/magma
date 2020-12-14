@@ -34,16 +34,16 @@ sudo ip link set veth1 up
 sudo ip link set veth0 up
 ```
 
-Add tunnel:
+Add tunnel, usie host1/2 physical adapter IP:
 ```bash
 sudo ovs-vsctl add-port br-cell gre0 -- set interface gre0 type=gre options:remote_ip=[HOST2]
 sudo ovs-vsctl add-port br-cell gre0 -- set interface gre0 type=gre options:remote_ip=[HOST1]
 ```
 
-Start containers (client and server):
+Start containers (client and server, using containers name uec):
 
 ```bash
-sudo docker run --privileged -itd ubuntu
+sudo docker run --name uec --privileged -itd ubuntu
 ```
 
 Install dependencies:
@@ -71,11 +71,18 @@ sudo route add default gw 172.17.0.1
 Iperf test:
 
 ```bash
-# on server, HOST1
+# on server container, HOST1
 iperf -s -i 1
-# on client, HOST2
-iperf -c [HOST1] -i 1 -t 60
+# in client container, HOST2
+iperf -c [container_HOST1] -i 1 -t 60
 ```
+
+Script to change IP of container, emulating handover:
+```bash
+python3 ovs_handover.py
+```
+
+
 
 
 
