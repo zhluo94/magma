@@ -5,15 +5,8 @@ from feg.protos import s6a_proxy_pb2, s6a_proxy_pb2_grpc
 from M2Crypto import EC, RSA
 from hashlib import sha1
 from random import getrandbits
-
-
-def getBrokerAuthenticationInformationAnswer(subd_answer):
-    aia = brokerd_pb2.BrokerAuthenticationInformationAnswer()
-    aia.error_code = subd_answer.error_code
-    for v in subd_answer.eutran_vectors:
-        aia.eutran_vectors.extend([getEUTRANVector(v)])
-    logging.info("Auth Msg Received")
-    return aia
+import time
+import os
 
 def getEUTRANVector(v):
     new_v = brokerd_pb2.BrokerAuthenticationInformationAnswer.EUTRANVector()
@@ -67,27 +60,27 @@ class BrokerdRpcServicer(brokerd_pb2_grpc.BrokerdServicer):
     def __init__(self, s6a_proxy_stub: s6a_proxy_pb2_grpc.S6aProxyStub):
         logging.info("starting brokerd servicer")
         self._s6a_proxy_stub = s6a_proxy_stub
-        # TODO: fix the absolute path
-        self.br_rsa_pri_key =  RSA.load_key('/home/vagrant/key_files/br_rsa_pri.pem')
-        self.br_ecdsa_pri_key =  EC.load_key('/home/vagrant/key_files/br_ec_pri.pem')
-        self.ue_rsa_pub_key = RSA.load_pub_key('/home/vagrant/key_files/ue_rsa_pub.pem')
-        self.ue_ecdsa_pub_key = EC.load_pub_key('/home/vagrant/key_files/ue_ec_pub.pem')
-        self.ut_rsa_pub_key = RSA.load_pub_key('/home/vagrant/key_files/ut_rsa_pub.pem')
-        self.ut_ecdsa_pub_key = EC.load_pub_key('/home/vagrant/key_files/ut_ec_pub.pem')
+        key_dir = os.getenv('KEY_DIR', '/var/opt/magma/key_files')
+        self.br_rsa_pri_key =  RSA.load_key(os.path.join(key_dir, 'br_rsa_pri.pem'))
+        self.br_ecdsa_pri_key =  EC.load_key(os.path.join(key_dir, 'br_ec_pri.pem'))
+        self.ue_rsa_pub_key = RSA.load_pub_key(os.path.join(key_dir, 'ue_rsa_pub.pem'))
+        self.ue_ecdsa_pub_key = EC.load_pub_key(os.path.join(key_dir, 'ue_ec_pub.pem'))
+        self.ut_rsa_pub_key = RSA.load_pub_key(os.path.join(key_dir, 'ut_rsa_pub.pem'))
+        self.ut_ecdsa_pub_key = EC.load_pub_key(os.path.join(key_dir, 'ut_ec_pub.pem'))
         self.br_id = 0
         logging.info("done loading broker keys")
 
     def add_to_server(self, server):
         brokerd_pb2_grpc.add_BrokerdServicer_to_server(self, server)
 
-    def getBrokerAuthenticationInformationAnswer(self, ue_id, ut_id, nonce, subd_answer):
+    def getBrokerAuthenticationInformationAnswer(self, ue_id, ut_id, nonce, ula):
         aia = brokerd_pb2.BrokerAuthenticationInformationAnswer()
-        aia.error_code = subd_answer.error_code
-        aia.br_auth_vectors.extend([self.getBrokerAuthVector(ue_id, ut_id, nonce)])
+        aia.error_code = s6a_proxy_pb2.SUCCESS
+        aia.br_auth_vectors.extend([self.getBrokerAuthVector(ue_id, ut_id, nonce, ula)])
         logging.info("Auth Msg Received")
         return aia
 
-    def getBrokerAuthVector(self, ue_id, ut_id, nonce):
+    def getBrokerAuthVector(self, ue_id, ut_id, nonce, ula):
         session_key_size = 32
         ss_ut_br = bytearray(getrandbits(8) for _ in range(session_key_size))
         ss_ue_br = bytearray(getrandbits(8) for _ in range(session_key_size))
@@ -99,11 +92,11 @@ class BrokerdRpcServicer(brokerd_pb2_grpc.BrokerdServicer):
         br_ue_plain_text.extend(ss_ue_br)
         br_ue_plain_text.extend(nonce)
 
-        #TODO: QoS
         br_ut_plain_text = bytearray(b'')
         br_ut_plain_text.append(self.br_id)
         br_ut_plain_text.extend(ss_ue_ut)
         br_ut_plain_text.extend(ss_ut_br)
+        br_ut_plain_text.extend(ula.SerializeToString()) # ula info
         v = brokerd_pb2.BrokerAuthenticationInformationAnswer.BrokerAuthVector()
         v.br_ut_token = self.ut_rsa_pub_key.public_encrypt(br_ut_plain_text, RSA.pkcs1_padding)
         v.br_ut_token_br_sig = self.br_ecdsa_pri_key.sign_dsa_asn1(sha1(v.br_ut_token).digest())
@@ -117,7 +110,8 @@ class BrokerdRpcServicer(brokerd_pb2_grpc.BrokerdServicer):
         #  - request AuthenticationInformation to subscriberdb;
         #  - sign the response
         #  - create BrokerAuthenticationInformationAnswer and return
-        
+        start = time.time()
+
         myhash = sha1()
         ue_br_token = request.ue_br_token
         ue_br_token_ue_sig = request.ue_br_token_ue_sig[:request.ue_br_token_ue_sig[1] + 2]
@@ -145,31 +139,30 @@ class BrokerdRpcServicer(brokerd_pb2_grpc.BrokerdServicer):
             return Void()
         else:
             logging.info('Done verifying UT signature')
-
-        subd_request = s6a_proxy_pb2.AuthenticationInformationRequest()
-        subd_request.user_name = request.user_name
-        subd_request.visited_plmn = request.visited_plmn
-        subd_request.num_requested_eutran_vectors = request.num_requested_eutran_vectors
-        subd_request.immediate_response_preferred = request.immediate_response_preferred
-        subd_request.resync_info = request.resync_info
-
+        
+        # update location 
+        ulr = s6a_proxy_pb2.UpdateLocationRequest()
+        ulr.user_name = request.user_name
+        ulr.visited_plmn = request.visited_plmn
+        # ignore skip_subscriber_data and initial_attach for now
         # send request
         try:
-            subd_answer = self._s6a_proxy_stub.AuthenticationInformation(subd_request)
+            ula = self._s6a_proxy_stub.UpdateLocation(ulr)
         except grpc.RpcError:
-            logging.error('Unable to generate authentication information for subscriber %s. ',
+            logging.error('Unable to update location for subscriber %s. ',
                           request.user_name)
             context.set_code(grpc.StatusCode.NOT_FOUND)
-            context.set_details('Failed to generate authentication info in broker')
+            context.set_details('Failed to update location in broker')
             return Void()
 
-        return self.getBrokerAuthenticationInformationAnswer(ue_id, ut_id, nonce, subd_answer)
-        # return getBrokerAuthenticationInformationAnswer(subd_answer)
+        bt_aia = self.getBrokerAuthenticationInformationAnswer(ue_id, ut_id, nonce, ula)
+
+        end = time.time()
+        logging.warning('BT authentication servicer takes: {} ms'.format((end - start)*1e3))
+        return bt_aia
 
     def BrokerUpdateLocation(self, request, context):
         # convert broker request
-        print('Update location through broker')
-        subd_request = s6a_proxy_pb2.UpdateLocationRequest()
         subd_request.user_name = request.user_name
         subd_request.visited_plmn = request.visited_plmn
         subd_request.skip_subscriber_data = request.skip_subscriber_data
@@ -184,26 +177,10 @@ class BrokerdRpcServicer(brokerd_pb2_grpc.BrokerdServicer):
             context.set_code(grpc.StatusCode.NOT_FOUND)
             context.set_details('Failed to update location in broker')
             return Void()
-
-        # broker answer
-        # aia = brokerd_pb2.BrokerUpdateLocationAnswer()
-        # aia.error_code = subd_answer.error_code
-        # aia.default_context_id = subd_answer.default_context_id
-        # aia.total_ambr.CopyFrom(subd_answer.total_ambr)
-        # #aia.total_ambr.max_bandwidth_ul = subd_answer.total_ambr.max_bandwidth_ul
-        # #aia.total_ambr.max_bandwidth_dl = subd_answer.total_ambr.max_bandwidth_dl
-        # aia.all_apns_included = subd_answer.all_apns_included
-        # aia.apn = subd_answer.apn
-        # aia.msisdn = subd_answer.msisdn
-        # aia.NetworkAccessMode = subd_answer.NetworkAccessMode
-        # aia.network_access_mode = subd_answer.network_access_mode
-        # logging.info("Update Msg Received")
-        # return aia
         return getBrokerUpdateLocationAnswer(subd_answer)
 
     def BrokerPurgeUE(self, request, context):
         # convert broker request
-        print('Purge UE through broker')
         subd_request = s6a_proxy_pb2.PurgeUERequest()
         subd_request.user_name = request.user_name
 
