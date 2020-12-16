@@ -11,7 +11,7 @@ import sqlite3
 import threading
 from contextlib import contextmanager
 
-from lte.protos.subscriberdb_pb2 import SubscriberData
+from lte.protos.subscriberdb_pb2 import SubscriberData,SubscriberState,LTESubscription
 
 from magma.subscriberdb.sid import SIDUtils
 from .base import (
@@ -21,6 +21,9 @@ from .base import (
 )
 from .onready import OnDataReady
 
+SRSUE_IMSI = '001010123456780'
+SRSUE_KEY = '00112233445566778899AABBCCDDEEFF'
+SRSUE_OPC = '63BFA50EE6523365FF14C1F45F88737D'
 
 class SqliteStore(BaseStore):
     """
@@ -35,6 +38,20 @@ class SqliteStore(BaseStore):
         self._tlocal = threading.local()
         self._create_store()
         self._on_ready = OnDataReady(loop=loop)
+        self.delete_all_subscribers()
+        self.add_srsue() # hard code srsue profiles into db, do so in init so that rpc server can start    
+
+    def add_srsue(self):
+        # Add for srsUE, add the hardcoded SubscriberData into the store when receiving request
+        imsi = 'IMSI' + SRSUE_IMSI
+        lte = LTESubscription()
+        lte.state = LTESubscription.ACTIVE
+        lte.auth_key = bytes.fromhex(SRSUE_KEY)
+        lte.auth_opc = bytes.fromhex(SRSUE_OPC)
+        state = SubscriberState()
+        state.lte_auth_next_seq = 1
+        sub_data = SubscriberData(sid=SIDUtils.to_pb(imsi), lte=lte, state=state)
+        self.add_subscriber(sub_data)
 
     @property
     def conn(self):

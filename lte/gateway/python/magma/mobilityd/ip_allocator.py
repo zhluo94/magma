@@ -270,7 +270,7 @@ class IPAllocator:
                    if self._test_ip_state(ip, IPState.ALLOCATED)]
         return res
 
-    def alloc_ip_address(self, sid: str) -> ip_address:
+    def alloc_ip_address(self, sid: str, renew: bool = False) -> ip_address:
         """ Allocate an IP address from the free list
 
         Assumption: one-to-one mappings between SID and IP.
@@ -286,12 +286,16 @@ class IPAllocator:
             DuplicatedIPAllocationError: if an IP has been allocated to a UE
                 with the same IMSI
         """
+        have_old_ip = False
         with self._lock:
             # if an IP is reserved for the UE, this IP could be in the state of
             # ALLOCATED, RELEASED or REAPED.
             if sid in self._sid_ips_map:
                 old_ip_desc = self._sid_ips_map[sid]
-                if self._test_ip_state(old_ip_desc.ip, IPState.ALLOCATED):
+                if renew:
+                    old_ip = old_ip_desc.ip
+                    have_old_ip = True
+                elif self._test_ip_state(old_ip_desc.ip, IPState.ALLOCATED):
                     # MME state went out of sync with mobilityd!
                     # Recover gracefully by allocating the same IP
                     logging.warning("Re-allocate IP %s for sid %s without "
@@ -315,11 +319,11 @@ class IPAllocator:
                                   sid, old_ip_desc.ip)
                 else:
                     raise AssertionError("Unexpected internal state")
-                logging.info("Allocating the same IP %s for sid %s",
-                             old_ip_desc.ip, sid)
-
-                IP_ALLOCATED_TOTAL.inc()
-                return old_ip_desc.ip
+                
+                if not renew:
+                    logging.info("Allocating the same IP %s for sid %s", old_ip_desc.ip, sid)
+                    IP_ALLOCATED_TOTAL.inc()
+                    return old_ip_desc.ip
 
             # if an IP is not yet allocated for the UE, allocate a new IP
             if self._get_ip_count(IPState.FREE):
@@ -329,7 +333,12 @@ class IPAllocator:
                 self._add_ip_to_state(ip_desc.ip, ip_desc, IPState.ALLOCATED)
                 self._sid_ips_map[sid] = ip_desc
 
-                IP_ALLOCATED_TOTAL.inc()
+                if renew and have_old_ip:
+                    # free the old ip
+                    ip_desc_to_free = self._mark_ip_state(old_ip, IPState.FREE)
+                    ip_desc_to_free.sid = None
+                else:
+                    IP_ALLOCATED_TOTAL.inc()
                 return ip_desc.ip
             else:
                 logging.error("Run out of available IP addresses")

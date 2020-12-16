@@ -7,7 +7,7 @@ FROM ${baseImage} as base
 # Install the runtime deps from apt
 RUN apt-get update && \
     apt-get install -y curl make git gcc bzr unzip vim sudo virtualenv pkg-config \
-    python3-dev python3-pip libsystemd-dev libssl-dev
+    python3-dev python3-pip libsystemd-dev libssl-dev swig
 
 # Install Golang 1.12
 WORKDIR /usr/local

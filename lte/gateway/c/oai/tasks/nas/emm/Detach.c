@@ -390,10 +390,11 @@ int emm_proc_detach_request(
   }
   detach_proc->ies = params;
   detach_proc->ue_id = ue_id;
-  if(emm_ctx->is_broker) {
+  if(emm_ctx->is_broker && false) {
     rc = emm_proc_usage_report(emm_ctx, &detach_proc->emm_spec_proc, _emm_detach_success_usage_report_cb, _emm_detach_success_usage_report_cb); //use the same call back for now
   } else {
     rc = _emm_start_detach_procedure(emm_ctx, ue_id, params);
+    nas_delete_detach_procedure(emm_ctx); // for now
   }
   OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
   // the following code is not executed

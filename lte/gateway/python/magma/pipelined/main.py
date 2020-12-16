@@ -66,6 +66,10 @@ def main():
                      callback,
                      service.loop
                      )
+        call_process('iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE',
+                     callback,
+                     service.loop
+                     )
 
     service.loop.create_task(monitor_ifaces(
         service.config['monitored_ifaces'],

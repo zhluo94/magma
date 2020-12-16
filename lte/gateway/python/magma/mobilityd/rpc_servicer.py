@@ -162,7 +162,7 @@ class MobilityServiceRpcServicer(MobilityServiceServicer):
                 if request.apn:
                     composite_sid = composite_sid + "." + request.apn
 
-                ip = self._ipv4_allocator.alloc_ip_address(composite_sid)
+                ip = self._ipv4_allocator.alloc_ip_address(composite_sid, renew=True)
                 logging.info("Allocated IPv4 %s for sid %s for apn %s"
                              % (ip, SIDUtils.to_str(request.sid), request.apn))
                 resp.version = IPAddress.IPV4
