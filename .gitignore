@@ -78,3 +78,6 @@ devmand/gateway/cmake-build-debug/
 
 # jetbrain
 .idea/
+
+# android
+platform-tools/
