@@ -77,9 +77,9 @@ Start containers on both hosts:
 
 ```bash
 # host 1
-sudo docker run --name uec --privileged -itd --mac-address 00:00:00:00:00:11 ubuntu
+sudo docker run --name uec --privileged -itd --mac-address 00:00:00:00:00:10 ubuntu
 # host 2
-sudo docker run --name uec --privileged -itd --mac-address 00:00:00:00:00:12 ubuntu
+sudo docker run --name uec --privileged -itd --mac-address 00:00:00:00:00:20 ubuntu
 ```
 
 Install dependencies:
@@ -127,14 +127,16 @@ NAT hole punching (behind cellular PGW), e.g., make a NAT state for VXLAN traffi
 echo -n "hello" | nc -u -w0 -p 4789 [HOST2] 12345
 ```
 
+Use tcpdump etc. to check the external IP and port (e.g., `-i eth0 port 12345 -nn`), then set up the local iptables described as what follows.
+
 DNAT at HOST2/server:
 ```
-iptables -t nat -D OUTPUT -p udp -d [] --dport 4789 -j DNAT --to-destination [EXT_IP]:[EXT_PORT]
+iptables -t nat -A OUTPUT -p udp -d [Remote Tunnel IP] --dport 4789 -j DNAT --to-destination [EXT_IP]:[EXT_PORT]
 ```
 
 SNAT at HOST2:
 ```
-iptables -t nat -A POSTROUTING -p udp --destination [EXT_IP] -j SNAT --to-source [HOST2]:12345
+iptables -t nat -A POSTROUTING -p udp --destination [Ditto] -j SNAT --to-source :12345
 ```
 
 Note: for all tunneling setup, remember to adjust MTU properly (e.g., 1600).
