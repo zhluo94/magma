@@ -7,18 +7,50 @@
 * Kernel MPTCP-enable
 * Open vSwitch
 * Docker
+* Wireguard (if VPN)
 
-> [TBD] ..
+> [TBD] The overlay network setup across cellular WAN consists of a VPN (wireguard) and GRE (or VXLAN) tunnel. 
 
 ### VPN 
 
-> [TBD] @mark
+> [TBD]
+
+Wireguard server:
+```
+[Interface]
+PrivateKey = ACBB..
+ListenPort = 55107
+Address = 192.168.4.1
+
+[Peer]
+PublicKey = iOirBGr20tUOtUj9slPG6dwPia1wu3+CnVntqP5ZPAQ=
+AllowedIPs = 192.168.4.2/32, 192.168.4.3/32
+PersistentKeepalive = 25
+```
+
+Wireguard client (UE):
+
+```
+[Interface]
+Address = 192.168.4.2
+PrivateKey = qL0a..
+ListenPort = 51820
+
+[Peer]
+PublicKey = kjdIWG0i6haYgmnmPkUxAPLSJK9CRGR9b9YjKWphSkk=
+AllowedIPs = 192.168.4.1/32
+Endpoint = [HOST2]:55107
+PersistentKeepalive = 25
+```
+
+Save the config as `/etc/wireguard/wg0.conf`. Run `sudo systemctl start wg-quick@wg0`.
+
 
 ### OvS
 
 This setup leverates docker and [Open vSwitch (OvS)](https://github.com/openvswitch/ovs)
 
-One can set up GRE/VXLAN tunnels connecting two Docker containers with commands:
+One can set up VXLAN (or GRE) tunnels connecting two Docker containers with commands:
 
 On each host (client and server):
 ```bash
@@ -36,8 +68,9 @@ sudo ip link set veth0 up
 
 Add tunnel, using the host's external IP:
 ```bash
-sudo ovs-vsctl add-port br-cell vx0 -- set interface vx0 type=vxlan options:remote_ip=[HOST2]
-sudo ovs-vsctl add-port br-cell vx0 -- set interface vx0 type=vxlan options:remote_ip=[HOST1]
+sudo ovs-vsctl add-port br-cell gre0 -- set interface gre0 type=gre options:remote_ip=[HOST2]
+sudo ovs-vsctl add-port br-cell gre0 -- set interface gre0 type=gre options:remote_ip=[HOST1]
+# GRE: replace type=gre with type=vxlan
 ```
 
 Start containers on both hosts:
@@ -81,17 +114,30 @@ iperf -c [container_HOST1] -i 1 -b 1m -t 60
 ```
 
 Script to change IP of container, emulating handover:
+
+> TBD
+
 ```bash
 python3 ovs_handover.py
 ```
 
+NAT hole punching (behind cellular PGW), e.g., make a NAT state for VXLAN traffic:
 
+```
+echo -n "hello" | nc -u -w0 -p 4789 [HOST2] 12345
+```
 
+DNAT at HOST2/server:
+```
+iptables -t nat -D OUTPUT -p udp -d [] --dport 4789 -j DNAT --to-destination [EXT_IP]:[EXT_PORT]
+```
 
+SNAT at HOST2:
+```
+iptables -t nat -A POSTROUTING -p udp --destination [EXT_IP] -j SNAT --to-source [HOST2]:12345
+```
 
-
-
-
+Note: for all tunneling setup, remember to adjust MTU properly (e.g., 1600).
 
 
 
