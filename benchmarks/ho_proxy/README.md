@@ -43,12 +43,13 @@ Endpoint = [HOST2]:55107
 PersistentKeepalive = 25
 ```
 
-Save the config as `/etc/wireguard/wg0.conf`. Run `sudo systemctl start wg-quick@wg0`.
+Save the config as `/etc/wireguard/wg0.conf`. Run`sudo systemctl start wg-quick@wg0`.
 
+Set up GRE tunnels (see below).
 
 ### OvS
 
-This setup leverates docker and [Open vSwitch (OvS)](https://github.com/openvswitch/ovs)
+This setup leverages docker and [Open vSwitch (OvS)](https://github.com/openvswitch/ovs)
 
 One can set up VXLAN (or GRE) tunnels connecting two Docker containers with commands:
 
