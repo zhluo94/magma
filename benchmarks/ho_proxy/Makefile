@@ -10,7 +10,12 @@ ifeq ($(WG_LOCAL), $(WG_REMOTE))
 $(info wg remote and local ip shouldn't be equal, remote: $(WG_REMOTE))
 endif
 
-# pick up handover signal and proxy
+# dongle config
+.PHONY: dongle
+dongle:
+	$(info yo, do it by hand and README pls)
+
+# pick up and proxy handover signal
 .PHONY: mon proxy
 mon:
 	cd ./QCSuper; sudo ./qcsuper.py --usb-modem /dev/ttyUSB0 --wireshark-live
