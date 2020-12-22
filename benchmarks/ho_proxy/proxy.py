@@ -20,6 +20,10 @@ def get_packet(fd: int) -> (bytes, bytes):
     return ts, os.read(fd, pkt_size)
 
 
+def change_ip(ifac, new_ip):
+    pass
+
+
 def loop():
     imc = pyshark.InMemCapture(linktype=228)
 
@@ -59,6 +63,7 @@ def loop():
             print("handover")
             pass
 
+        # TBD which timestamp
         print(time.time(), handover, cell_id)
 
 
