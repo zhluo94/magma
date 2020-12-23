@@ -8,7 +8,6 @@ endif
 WG_LOCAL:=$(shell cat /etc/wireguard/wg0.conf | grep Address | cut -d' ' -f3)
 ifeq ($(WG_LOCAL), $(WG_REMOTE))
 $(info wg remote and local ip shouldn't be equal, remote: $(WG_REMOTE))
-	exit 1
 endif
 
 # dongle config
