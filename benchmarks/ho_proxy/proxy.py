@@ -33,14 +33,12 @@ def loop():
     while True:
         if (source, select.POLLIN) in poll.poll(2000):  # 2s
             ts, pkt = get_packet(source)
-            # print(msg.decode())
         else:
             continue
 
         pkt = imc.parse_packet(pkt)
 
-        # print(pkt, dir(pkt.lte_rrc))
-        # print("timestamp:", ts)
+        # print("timestamp:", ts, pkt, dir(pkt.lte_rrc))
 
         # cell id
         cell_id = None
@@ -64,7 +62,7 @@ def loop():
                 _ip_pool = iter(range(128))
                 ip = next(_ip_pool)
 
-            ho.do(new_ip=ip)
+            ho.do(new_ip=ip, lat=0.02)
 
         # TBD which timestamp
         print(time.time(), handover, cell_id)
