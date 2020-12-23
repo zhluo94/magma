@@ -8,6 +8,7 @@ endif
 WG_LOCAL:=$(shell cat /etc/wireguard/wg0.conf | grep Address | cut -d' ' -f3)
 ifeq ($(WG_LOCAL), $(WG_REMOTE))
 $(info wg remote and local ip shouldn't be equal, remote: $(WG_REMOTE))
+	exit 1
 endif
 
 # dongle config
@@ -29,9 +30,12 @@ wg:
 br:
 	sudo ovs-vsctl add-br $(OVS_BR) || true
 gre: | br
-	sudo ovs-vsctl add-port $(OVS_BR) gre0 -- set interface gre0 type=gre options:remote_ip=$(WG_REMOTE)
 	sudo ip link add veth0 type veth peer name veth1
 	sudo ovs-vsctl add-port $(OVS_BR) veth1
+	sudo brctl addif docker0 veth0
+	sudo ip link set veth1 up
+	sudo ip link set veth0 up
+	sudo ovs-vsctl add-port $(OVS_BR) gre0 -- set interface gre0 type=gre options:remote_ip=$(WG_REMOTE)
 	sudo ovs-vsctl show
 
 tun: | wg gre
