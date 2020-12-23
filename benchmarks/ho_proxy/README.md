@@ -1,6 +1,6 @@
 # Handover Proxy
 
->  [TBD] The handover proxy enables emulating handover over existing cellular infrastrucuture across a pair of client device and server.
+Handover proxy enables emulating handover over existing cellular infrastrucuture across a pair of client device and server.
 
 ### Prerequisites
 
@@ -12,8 +12,6 @@
 > [TBD] The overlay network setup across cellular WAN consists of a VPN (wireguard) and GRE (or VXLAN) tunnel. 
 
 ### VPN 
-
-> [TBD]
 
 Wireguard server:
 ```
