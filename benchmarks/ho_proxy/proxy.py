@@ -11,6 +11,7 @@ import os
 import time
 from struct import unpack
 import select
+import ho
 
 _pipe = "/tmp/pcap_buffer"
 
@@ -18,10 +19,6 @@ _pipe = "/tmp/pcap_buffer"
 def get_packet(fd: int) -> (bytes, bytes):
     ts, pkt_size = unpack("<II", os.read(fd, 8))
     return ts, os.read(fd, pkt_size)
-
-
-def change_ip(ifac, new_ip):
-    pass
 
 
 def loop():
@@ -32,6 +29,7 @@ def loop():
     poll = select.poll()
     poll.register(source, select.POLLIN)
 
+    _ip_pool = iter(range(128))
     while True:
         if (source, select.POLLIN) in poll.poll(2000):  # 2s
             ts, pkt = get_packet(source)
@@ -60,8 +58,13 @@ def loop():
 
         # record
         if handover:
-            print("handover")
-            pass
+            try:
+                ip = next(_ip_pool)
+            except StopIteration:
+                _ip_pool = iter(range(128))
+                ip = next(_ip_pool)
+
+            ho.do(new_ip=ip)
 
         # TBD which timestamp
         print(time.time(), handover, cell_id)

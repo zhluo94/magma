@@ -69,5 +69,5 @@ tracebox:
 # container
 .PHONY: con
 con:
-	$(info TBD)
+	sudo docker run --name uec --privileged -itd --mac-address $(CON_MAC) silveryfu/celleval:latest
 
