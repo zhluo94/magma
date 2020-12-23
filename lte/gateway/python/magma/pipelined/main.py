@@ -66,7 +66,7 @@ def main():
                      callback,
                      service.loop
                      )
-        call_process('iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE',
+        call_process('iptables -t nat -A POSTROUTING -o eth3 -j MASQUERADE',
                      callback,
                      service.loop
                      )

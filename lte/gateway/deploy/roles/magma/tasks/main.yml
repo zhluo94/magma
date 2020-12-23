@@ -265,3 +265,14 @@
     - eth0
     - mtr0
   when: full_provision
+
+- name: Delete default route
+  shell: ip route del default via 10.0.2.2 dev eth0
+  when: full_provision
+  
+- name: Add default route via bridged interface 
+  shell: ip route add default via 192.168.1.254 dev eth3
+  when: full_provision
+
+- name: Disable IPv6 on the bridged interface
+  shell: sysctl -w net.ipv6.conf.eth3.disable_ipv6=1
