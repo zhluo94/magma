@@ -112,12 +112,10 @@ iperf -s -i 1
 iperf -c [container_HOST1] -i 1 -b 1m -t 60
 ```
 
-Script to change IP of container, emulating handover:
-
-> TBD
+Script to change IP of container:
 
 ```bash
-python3 ovs_handover.py
+python3 ho.py
 ```
 
 NAT hole punching (behind cellular PGW), e.g., make a NAT state for VXLAN traffic:
