@@ -47,7 +47,7 @@ class SqliteStore(BaseStore):
         lte = LTESubscription()
         lte.state = LTESubscription.ACTIVE
         lte.auth_key = bytes.fromhex(SRSUE_KEY)
-        lte.auth_opc = bytes.fromhex(SRSUE_OPC)
+        #lte.auth_opc = bytes.fromhex(SRSUE_OPC)
         state = SubscriberState()
         state.lte_auth_next_seq = 1
         sub_data = SubscriberData(sid=SIDUtils.to_pb(imsi), lte=lte, state=state)

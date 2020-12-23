@@ -20,6 +20,8 @@ from .crypto.gsm import UnsafePreComputedA3A8
 from .crypto.milenage import Milenage
 from .crypto.utils import CryptoError
 
+SRSUE_IMSI = '001010123456780'
+SRSUE_OPC = '63BFA50EE6523365FF14C1F45F88737D'
 
 class GSMProcessor(metaclass=abc.ABCMeta):
     """
@@ -181,7 +183,10 @@ class Processor(GSMProcessor, LTEProcessor):
             raise CryptoError("Subscriber key not valid for %s" % sid)
 
         if len(subs.lte.auth_opc) == 0:
-            opc = Milenage.generate_opc(subs.lte.auth_key, self._op)
+            if imsi == SRSUE_IMSI:
+                opc = bytes.fromhex(SRSUE_OPC)
+            else:
+                opc = Milenage.generate_opc(subs.lte.auth_key, self._op)
         elif len(subs.lte.auth_opc) != 16:
             raise CryptoError("Subscriber OPc is invalid length for %s" % sid)
         else:
@@ -251,10 +256,13 @@ class Processor(GSMProcessor, LTEProcessor):
         # The 3GPP TS 33.102 spec allows wrapping around the maximum value.
         # The re-synchronization mechanism would be used to sync the counter
         # between USIM and HSS when it happens.
-        with self._store.edit_subscriber(sid) as subs:
-            seq = subs.state.lte_auth_next_seq
-            subs.state.lte_auth_next_seq += 1
-        return seq
+        #with self._store.edit_subscriber(sid) as subs:
+        #    seq = subs.state.lte_auth_next_seq
+        #    subs.state.lte_auth_next_seq += 1
+        #return seq
+        # read but not increment
+        subs = self._store.get_subscriber_data(sid)
+        return subs.state.lte_auth_next_seq
 
     def set_next_lte_auth_seq(self, imsi, seq):
         """
