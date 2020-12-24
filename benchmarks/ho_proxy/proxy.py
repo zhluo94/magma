@@ -29,7 +29,8 @@ def loop():
     poll = select.poll()
     poll.register(source, select.POLLIN)
 
-    _ip_pool = iter(range(128))
+    _ip_pool = iter(range(5, 128))
+    handover_start = False
     while True:
         if (source, select.POLLIN) in poll.poll(2000):  # 2s
             ts, pkt = get_packet(source)
@@ -47,25 +48,33 @@ def loop():
         except AttributeError:
             pass
 
-        # handover
-        handover = False
+        # Check handover completes
+        if handover_start:
+            handover_complete = False
+            try:
+                handover_complete = pkt.lte_rrc.lte_rrc_rrcconnectionreconfigurationcomplete_element == 'rrcConnectionReconfigurationComplete'
+            except AttributeError:
+                pass
+
+            # Record
+            if (handover_complete):
+                try:
+                    ip = next(_ip_pool)
+                except StopIteration:
+                    _ip_pool = iter(range(5, 128))
+                    ip = next(_ip_pool)
+
+                ho.do(new_ip=ip, lat=0.02)
+            handover_start = False
+
+        # handover start
         try:
-            handover = pkt.lte_rrc.lte_rrc_mobilitycontrolinfo_element == 'mobilityControlInfo'
+            handover_start = pkt.lte_rrc.lte_rrc_mobilitycontrolinfo_element == 'mobilityControlInfo'
         except AttributeError:
             pass
 
-        # record
-        if handover:
-            try:
-                ip = next(_ip_pool)
-            except StopIteration:
-                _ip_pool = iter(range(128))
-                ip = next(_ip_pool)
-
-            ho.do(new_ip=ip, lat=0.02)
-
         # TBD which timestamp
-        print(time.time(), handover, cell_id)
+        print(time.time(), handover_complete, cell_id)
 
 
 if __name__ == "__main__":
