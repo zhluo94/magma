@@ -2,88 +2,109 @@
 Client connecting to 172.17.0.2, TCP port 5001
 TCP window size: 12.0 MByte (default)
 ------------------------------------------------------------
-[  3] local 172.17.0.10 port 49644 connected with 172.17.0.2 port 5001
+[  3] local 172.17.0.10 port 49654 connected with 172.17.0.2 port 5001
 [ ID] Interval       Transfer     Bandwidth
-[  3]  0.0- 1.0 sec  35.1 MBytes   294 Mbits/sec
-[  3]  1.0- 2.0 sec  84.1 MBytes   706 Mbits/sec
-[  3]  2.0- 3.0 sec  81.1 MBytes   681 Mbits/sec
-[  3]  3.0- 4.0 sec  80.9 MBytes   678 Mbits/sec
-[  3]  4.0- 5.0 sec  90.6 MBytes   760 Mbits/sec
+[  3]  0.0- 1.0 sec  36.7 MBytes   308 Mbits/sec
+[  3]  1.0- 2.0 sec  71.0 MBytes   596 Mbits/sec
+[  3]  2.0- 3.0 sec  81.5 MBytes   684 Mbits/sec
+[  3]  3.0- 4.0 sec  86.0 MBytes   721 Mbits/sec
+[  3]  4.0- 5.0 sec  85.6 MBytes   718 Mbits/sec
+[  3]  5.0- 6.0 sec  31.9 MBytes   268 Mbits/sec
+[  3]  6.0- 7.0 sec  82.2 MBytes   690 Mbits/sec
+[  3]  7.0- 8.0 sec  79.9 MBytes   670 Mbits/sec
+[  3]  8.0- 9.0 sec  84.0 MBytes   705 Mbits/sec
+[  3]  9.0-10.0 sec  89.4 MBytes   750 Mbits/sec
+[  3] 10.0-11.0 sec  81.4 MBytes   683 Mbits/sec
+[  3] 11.0-12.0 sec  87.8 MBytes   736 Mbits/sec
+[  3] 12.0-13.0 sec  88.1 MBytes   739 Mbits/sec
+[  3] 13.0-14.0 sec  88.1 MBytes   739 Mbits/sec
+[  3] 14.0-15.0 sec  88.9 MBytes   746 Mbits/sec
+[  3]  0.0-15.0 sec  1.14 GBytes   650 Mbits/sec
 ------------------------------------------------------------
 Client connecting to 172.17.0.2, TCP port 5001
 TCP window size: 12.0 MByte (default)
 ------------------------------------------------------------
-[  3] local 172.17.0.5 port 35316 connected with 172.17.0.2 port 5001
-[  3]  5.0- 6.0 sec  22.2 MBytes   186 Mbits/sec
+[  3] local 172.17.0.6 port 56388 connected with 172.17.0.2 port 5001
 [ ID] Interval       Transfer     Bandwidth
-[  3]  0.0- 1.0 sec  23.4 MBytes   197 Mbits/sec
-[  3]  6.0- 7.0 sec  44.4 MBytes   372 Mbits/sec
-[  3]  1.0- 2.0 sec  47.5 MBytes   398 Mbits/sec
-[  3]  7.0- 8.0 sec  47.2 MBytes   396 Mbits/sec
-[  3]  2.0- 3.0 sec  45.6 MBytes   383 Mbits/sec
-[  3]  8.0- 9.0 sec  46.4 MBytes   389 Mbits/sec
-[  3]  3.0- 4.0 sec  45.9 MBytes   385 Mbits/sec
-[  3]  9.0-10.0 sec  45.2 MBytes   380 Mbits/sec
-Multicast requires -u option  failed
-[  3]  4.0- 5.0 sec  47.1 MBytes   395 Mbits/sec
-[  3] 10.0-11.0 sec  18.0 MBytes   151 Mbits/sec
-[  3]  5.0- 6.0 sec  23.9 MBytes   200 Mbits/sec
-[  3] 11.0-12.0 sec  43.8 MBytes   367 Mbits/sec
-[  3]  6.0- 7.0 sec  45.2 MBytes   380 Mbits/sec
-[  3] 12.0-13.0 sec  47.1 MBytes   395 Mbits/sec
-[  3]  7.0- 8.0 sec  45.4 MBytes   381 Mbits/sec
-[  3] 13.0-14.0 sec  45.6 MBytes   383 Mbits/sec
-[  3]  8.0- 9.0 sec  44.2 MBytes   371 Mbits/sec
-[  3] 14.0-15.0 sec  44.0 MBytes   369 Mbits/sec
-[  3]  0.0-15.0 sec   776 MBytes   433 Mbits/sec
+[  3]  0.0- 1.0 sec  79.6 MBytes   668 Mbits/sec
+[  3]  1.0- 2.0 sec  71.8 MBytes   602 Mbits/sec
+[  3]  2.0- 3.0 sec  72.6 MBytes   609 Mbits/sec
+[  3]  3.0- 4.0 sec  83.0 MBytes   696 Mbits/sec
+[  3]  4.0- 5.0 sec  86.8 MBytes   728 Mbits/sec
+[  3]  5.0- 6.0 sec  30.7 MBytes   258 Mbits/sec
+[  3]  6.0- 7.0 sec  74.1 MBytes   622 Mbits/sec
+[  3]  7.0- 8.0 sec  82.4 MBytes   691 Mbits/sec
+[  3]  8.0- 9.0 sec  89.1 MBytes   748 Mbits/sec
+[  3]  9.0-10.0 sec  83.8 MBytes   703 Mbits/sec
+[  3] 10.0-11.0 sec  87.6 MBytes   735 Mbits/sec
+[  3] 11.0-12.0 sec  86.4 MBytes   725 Mbits/sec
+[  3] 12.0-13.0 sec  84.5 MBytes   709 Mbits/sec
+[  3] 13.0-14.0 sec  78.6 MBytes   660 Mbits/sec
+[  3] 14.0-15.0 sec  66.4 MBytes   557 Mbits/sec
+[  3]  0.0-15.0 sec  1.13 GBytes   647 Mbits/sec
 ------------------------------------------------------------
 Client connecting to 172.17.0.2, TCP port 5001
 TCP window size: 12.0 MByte (default)
 ------------------------------------------------------------
-[  3] local 172.17.0.7 port 43710 connected with 172.17.0.2 port 5001
-[  3]  9.0-10.0 sec  52.1 MBytes   437 Mbits/sec
+[  3] local 172.17.0.7 port 43720 connected with 172.17.0.2 port 5001
 [ ID] Interval       Transfer     Bandwidth
-[  3]  0.0- 1.0 sec  19.7 MBytes   165 Mbits/sec
-[  3] 10.0-11.0 sec  20.8 MBytes   175 Mbits/sec
-[  3]  1.0- 2.0 sec  45.4 MBytes   381 Mbits/sec
-[  3] 11.0-12.0 sec  43.4 MBytes   364 Mbits/sec
-[  3]  2.0- 3.0 sec  45.6 MBytes   383 Mbits/sec
-[  3] 12.0-13.0 sec  45.5 MBytes   382 Mbits/sec
-[  3]  3.0- 4.0 sec  46.1 MBytes   387 Mbits/sec
-[  3] 13.0-14.0 sec  46.2 MBytes   388 Mbits/sec
+[  3]  0.0- 1.0 sec  76.2 MBytes   640 Mbits/sec
+[  3]  1.0- 2.0 sec  81.4 MBytes   683 Mbits/sec
+[  3]  2.0- 3.0 sec  76.8 MBytes   644 Mbits/sec
+[  3]  3.0- 4.0 sec  88.2 MBytes   740 Mbits/sec
+[  3]  4.0- 5.0 sec  85.4 MBytes   716 Mbits/sec
+[  3]  5.0- 6.0 sec  30.9 MBytes   259 Mbits/sec
+[  3]  6.0- 7.0 sec  83.6 MBytes   701 Mbits/sec
+[  3]  7.0- 8.0 sec  84.9 MBytes   712 Mbits/sec
+[  3]  8.0- 9.0 sec  82.0 MBytes   688 Mbits/sec
+[  3]  9.0-10.0 sec  84.1 MBytes   706 Mbits/sec
+[  3] 10.0-11.0 sec  85.8 MBytes   719 Mbits/sec
+[  3] 11.0-12.0 sec  82.1 MBytes   689 Mbits/sec
+[  3] 12.0-13.0 sec  82.6 MBytes   693 Mbits/sec
+[  3] 13.0-14.0 sec  87.8 MBytes   736 Mbits/sec
+[  3] 14.0-15.0 sec  89.6 MBytes   752 Mbits/sec
+[  3]  0.0-15.0 sec  1.17 GBytes   671 Mbits/sec
 ------------------------------------------------------------
 Client connecting to 172.17.0.2, TCP port 5001
 TCP window size: 12.0 MByte (default)
 ------------------------------------------------------------
-[  3] local 172.17.0.8 port 54394 connected with 172.17.0.2 port 5001
-[  3]  4.0- 5.0 sec  44.4 MBytes   372 Mbits/sec
-[  3] 14.0-15.0 sec  45.2 MBytes   380 Mbits/sec
-[  3]  0.0-15.0 sec   622 MBytes   347 Mbits/sec
+[  3] local 172.17.0.8 port 54404 connected with 172.17.0.2 port 5001
 [ ID] Interval       Transfer     Bandwidth
-[  3]  0.0- 1.0 sec  17.0 MBytes   143 Mbits/sec
-[  3]  5.0- 6.0 sec  25.6 MBytes   215 Mbits/sec
-[  3]  6.0- 7.0 sec  48.6 MBytes   408 Mbits/sec
-[  3]  1.0- 2.0 sec  41.5 MBytes   348 Mbits/sec
-[  3]  7.0- 8.0 sec  51.5 MBytes   432 Mbits/sec
-[  3]  2.0- 3.0 sec  39.6 MBytes   332 Mbits/sec
-[  3]  3.0- 4.0 sec  40.4 MBytes   339 Mbits/sec
-[  3]  8.0- 9.0 sec  49.9 MBytes   418 Mbits/sec
-New IP: 172.17.0.6New IP: 172.17.0.7New IP: 172.17.0.8New IP: 172.17.0.9New IP: 172.17.0.10[  3]  4.0- 5.0 sec  40.9 MBytes   343 Mbits/sec
-[  3]  9.0-10.0 sec  47.3 MBytes   397 Mbits/sec
-[  3] 10.0-11.0 sec  22.6 MBytes   190 Mbits/sec
-[  3]  5.0- 6.0 sec  24.4 MBytes   204 Mbits/sec
-[  3] 11.0-12.0 sec  43.4 MBytes   364 Mbits/sec
-[  3]  6.0- 7.0 sec  45.2 MBytes   380 Mbits/sec
-[  3] 12.0-13.0 sec  44.6 MBytes   374 Mbits/sec
-[  3]  7.0- 8.0 sec  49.6 MBytes   416 Mbits/sec
-[  3] 13.0-14.0 sec  45.2 MBytes   380 Mbits/sec
-[  3]  8.0- 9.0 sec  43.4 MBytes   364 Mbits/sec
-[  3] 14.0-15.0 sec  44.6 MBytes   374 Mbits/sec
-[  3]  0.0-15.0 sec   625 MBytes   349 Mbits/sec
-[  3]  9.0-10.0 sec  47.4 MBytes   397 Mbits/sec
-[  3] 10.0-11.0 sec  84.8 MBytes   711 Mbits/sec
-[  3] 11.0-12.0 sec  84.8 MBytes   711 Mbits/sec
-[  3] 12.0-13.0 sec  85.0 MBytes   713 Mbits/sec
-[  3] 13.0-14.0 sec  90.4 MBytes   758 Mbits/sec
-[  3] 14.0-15.0 sec  76.9 MBytes   645 Mbits/sec
-[  3]  0.0-15.0 sec   811 MBytes   454 Mbits/sec
+[  3]  0.0- 1.0 sec  88.1 MBytes   739 Mbits/sec
+[  3]  1.0- 2.0 sec  91.0 MBytes   763 Mbits/sec
+[  3]  2.0- 3.0 sec  84.4 MBytes   708 Mbits/sec
+[  3]  3.0- 4.0 sec  92.6 MBytes   777 Mbits/sec
+[  3]  4.0- 5.0 sec  94.4 MBytes   792 Mbits/sec
+[  3]  5.0- 6.0 sec  37.4 MBytes   314 Mbits/sec
+[  3]  6.0- 7.0 sec  73.4 MBytes   616 Mbits/sec
+[  3]  7.0- 8.0 sec  81.5 MBytes   684 Mbits/sec
+[  3]  8.0- 9.0 sec  89.9 MBytes   754 Mbits/sec
+[  3]  9.0-10.0 sec  73.9 MBytes   620 Mbits/sec
+[  3] 10.0-11.0 sec  86.2 MBytes   724 Mbits/sec
+[  3] 11.0-12.0 sec  83.4 MBytes   699 Mbits/sec
+[  3] 12.0-13.0 sec  83.0 MBytes   696 Mbits/sec
+[  3] 13.0-14.0 sec  83.6 MBytes   701 Mbits/sec
+[  3] 14.0-15.0 sec  88.0 MBytes   738 Mbits/sec
+[  3]  0.0-15.0 sec  1.20 GBytes   688 Mbits/sec
+------------------------------------------------------------
+Client connecting to 172.17.0.2, TCP port 5001
+TCP window size: 12.0 MByte (default)
+------------------------------------------------------------
+[  3] local 172.17.0.9 port 35818 connected with 172.17.0.2 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0- 1.0 sec  75.2 MBytes   631 Mbits/sec
+[  3]  1.0- 2.0 sec  82.6 MBytes   693 Mbits/sec
+[  3]  2.0- 3.0 sec  81.6 MBytes   685 Mbits/sec
+[  3]  3.0- 4.0 sec  89.4 MBytes   750 Mbits/sec
+[  3]  4.0- 5.0 sec  76.1 MBytes   639 Mbits/sec
+[  3]  5.0- 6.0 sec  31.1 MBytes   261 Mbits/sec
+[  3]  6.0- 7.0 sec  81.6 MBytes   685 Mbits/sec
+[  3]  7.0- 8.0 sec  72.5 MBytes   608 Mbits/sec
+[  3]  8.0- 9.0 sec  86.8 MBytes   728 Mbits/sec
+[  3]  9.0-10.0 sec  85.9 MBytes   720 Mbits/sec
+[  3] 10.0-11.0 sec  86.0 MBytes   721 Mbits/sec
+[  3] 11.0-12.0 sec  85.1 MBytes   714 Mbits/sec
+[  3] 12.0-13.0 sec  90.0 MBytes   755 Mbits/sec
+[  3] 13.0-14.0 sec  91.4 MBytes   767 Mbits/sec
+New IP: 172.17.0.6New IP: 172.17.0.7New IP: 172.17.0.8New IP: 172.17.0.9New IP: 172.17.0.10[  3] 14.0-15.0 sec  87.4 MBytes   733 Mbits/sec
+[  3]  0.0-15.0 sec  1.17 GBytes   672 Mbits/sec

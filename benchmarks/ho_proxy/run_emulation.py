@@ -33,9 +33,11 @@ def run():
                 _ip_pool = iter(range(5, 128))
                 ip = _ip_base + str(next(_ip_pool))
             fp.write("New IP: " + ip)
-            print("New IP: " + ip)
+            # print("New IP: " + ip)
             # Start iperf steam for 15 seconds
             ho.start_iperf(t="15", file=fp)
             time.sleep(5)
             # Handover at 5 seconds
             ho.do(new_ip=ip, lat=i)
+            # Wait for 10 more seconds for iperf stream to finish
+            time.sleep(10)
