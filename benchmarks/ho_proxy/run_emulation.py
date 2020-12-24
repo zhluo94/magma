@@ -25,13 +25,15 @@ def run():
 
     # Data collection
     with open('run_output.txt', 'w') as fp:
-        for i in np.arange(0.0, 0.01, 0.01):
+        for i in np.arange(0.0, 0.05, 0.01):
             # Set New IP
             try:
                 ip = _ip_base + str(next(_ip_pool))
             except StopIteration:
                 _ip_pool = iter(range(5, 128))
                 ip = _ip_base + str(next(_ip_pool))
+            fp.write("New IP: " + ip)
+            print("New IP: " + ip)
             # Start iperf steam for 15 seconds
             ho.start_iperf(t="15", file=fp)
             time.sleep(5)
