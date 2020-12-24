@@ -24,18 +24,24 @@ def change_con_ip(new_ip, name="uec", ifac="eth0",
         "" if msg == "" else "echo {}".format(msg),
     ]), shell=True)
 
-def start_iperf(name="uec", mode="c", ip="172.17.0.2", t="10", msg=""):
+def start_iperf(name="uec", mode="c", ip="172.17.0.2", t="10", msg="", file=None):
     _cmd = "iperf -{} {} -i 1 -t {}".format(mode, ip, t)
     if (mode == "s"):
         _cmd = "iperf -{} -i 1 -t {}".format(mode, t)
     _exec = "sudo docker exec -it {} {}"
 
-    p = subprocess.Popen(";".join([
-        _exec.format(name, _cmd),
-        "" if msg == "" else "echo {}".format(msg),
-    ]), shell=True, stdout=PIPE, stderr=PIPE)
-    output = p.stdout.read()
-    print(str(output, 'utf-8'))
+    if (file):
+        p = subprocess.Popen(";".join([
+            _exec.format(name, _cmd),
+            "" if msg == "" else "echo {}".format(msg),
+        ]), shell=True, stdout=file, stderr=file)
+    else:
+        p = subprocess.Popen(";".join([
+            _exec.format(name, _cmd),
+            "" if msg == "" else "echo {}".format(msg),
+        ]), shell=True, stdout=PIPE, stderr=PIPE)
+        output = p.stdout.read()
+        print(str(output, 'utf-8'))
 
 
 def do(*args, f=change_con_ip, **kwargs):
