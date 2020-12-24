@@ -23,7 +23,7 @@ def run():
 
     # Data collection
     with open('run_output.txt', 'w') as fp:
-        for (i in range (0, 1, 0.01)):
+        for i in range (0, 1, 0.01):
             # Set New IP
             try:
                 ip = next(_ip_pool)
@@ -35,4 +35,3 @@ def run():
             time.sleep(5)
             # Handover at 5 seconds
             ho.do(new_ip=ip, lat=i)
-            
