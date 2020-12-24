@@ -12,25 +12,26 @@ import numpy as np
 def run():
 
     # define IP Pool
+    _ip_base = "172.17.0."
     _ip_pool = iter(range(5, 128))
 
     # Set initial IP
     try:
-        ip = next(_ip_pool)
+        ip = _ip_base + str(next(_ip_pool))
     except StopIteration:
         _ip_pool = iter(range(5, 128))
-        ip = next(_ip_pool)
+        ip = _ip_base + str(next(_ip_pool))
     ho.do(new_ip=ip, lat=0)
 
     # Data collection
     with open('run_output.txt', 'w') as fp:
-        for i in np.arange(0.0, 1.0, 0.01):
+        for i in np.arange(0.0, 0.01, 0.01):
             # Set New IP
             try:
-                ip = next(_ip_pool)
+                ip = _ip_base + str(next(_ip_pool))
             except StopIteration:
                 _ip_pool = iter(range(5, 128))
-                ip = next(_ip_pool)
+                ip = _ip_base + str(next(_ip_pool))
             # Start iperf steam for 15 seconds
             ho.start_iperf(t="15", file=fp)
             time.sleep(5)
