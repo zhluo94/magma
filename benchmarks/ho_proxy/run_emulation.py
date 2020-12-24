@@ -7,6 +7,7 @@ Prerequesite, remote container running at 172.17.0.2 with an iperf server.
 
 import ho
 import time
+import numpy as np
 
 def run():
 
@@ -23,7 +24,7 @@ def run():
 
     # Data collection
     with open('run_output.txt', 'w') as fp:
-        for i in range (0, 1, 0.01):
+        for i in np.arange(0.0, 1.0, 0.01):
             # Set New IP
             try:
                 ip = next(_ip_pool)
