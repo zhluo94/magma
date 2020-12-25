@@ -24,10 +24,10 @@ def change_con_ip(new_ip, name="uec", ifac="eth0",
         "" if msg == "" else "echo {}".format(msg),
     ]), shell=True)
 
-def start_iperf(name="uec", mode="c", ip="172.17.0.2", t="10", msg="", file=None):
-    _cmd = "iperf -{} {} -i 1 -t {}".format(mode, ip, t)
+def start_iperf(name="uec", mode="c", ip="172.17.0.2", t="10", i="1", msg="", file=None):
+    _cmd = "iperf -{} {} -i {} -t {}".format(mode, ip, i, t)
     if (mode == "s"):
-        _cmd = "iperf -{} -i 1 -t {}".format(mode, t)
+        _cmd = "iperf -{} -i {} -t {}".format(mode, i, t)
     _exec = "sudo docker exec -it {} {}"
 
     if (file):
