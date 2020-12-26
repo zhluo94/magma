@@ -54,7 +54,7 @@ vxlan: | br
 	$(info see README)
 
 # nat
-.PHONE: nat
+.PHONY: nat
 nat:
 	$(info see README)
 
@@ -70,3 +70,7 @@ tracebox:
 con:
 	sudo docker run --name uec --privileged -itd --mac-address $(CON_MAC) silveryfu/celleval:latest
 
+# dongle
+.PHONY: qc
+qc:
+	sudo ./qcsuper.py --usb-modem /dev/ttyUSB0 --wireshark-live # replace ttyUSB0 if different serial file
