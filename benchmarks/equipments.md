@@ -15,10 +15,11 @@ Software:
 
 Steps:
 * Activate SIM card
-* lsusb
-* mmcli -L: 
-* mmcli -m [modem_id] --simple-connect="apn=[APN]"
-* cd ho_proxy; make start
+* lsusb - confirm the dongle is detected
+* mmcli -L - identify modem id of the dongle
+* mmcli -m [modem_id] --simple-connect="apn=[APN]" - connect to the cellular provider
+* make sure the dongle is in "connected" mode (mmcli -m [modem id]) and ping -I [iface] google.com
+* cd ho_proxy; make qc - start qcsuper
 
 ### Setup 2: Phone (HotSpot, ADB) + Laptop
 
