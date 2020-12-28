@@ -25,7 +25,7 @@ def run():
 
     # Data collection
     with open('run_output.txt', 'w') as fp:
-        for i in np.arange(0.0, 0.5, 0.01):
+        for i in [0, 0.01, 0.04, 0.16, 0.64, 1.28]:
             # Set New IP
             try:
                 ip = _ip_base + str(next(_ip_pool))
@@ -35,9 +35,15 @@ def run():
             # fp.write("New IP: " + ip)
             # print("New IP: " + ip)
             # Start iperf steam for 15 seconds
-            app.start_iperf(t="15", i="0.1", file=fp)
-            time.sleep(5)
+            app.start_iperf(t="20", i="0.1", file=fp)
             # Handover at 5 seconds
+            time.sleep(5)
             app.do(new_ip=ip, lat=i)
-            # Wait for 10 more seconds for iperf stream to finish
-            time.sleep(10)
+            # Handover at 10 seconds
+            time.sleep(5)
+            app.do(new_ip=ip, lat=i)
+            # Handover at 15 seconds
+            time.sleep(5)
+            app.do(new_ip=ip, lat=i)
+            # Wait for 5 more seconds for iperf stream to finish
+            time.sleep(5)
