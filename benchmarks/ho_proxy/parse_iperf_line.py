@@ -44,6 +44,9 @@ def txt(filename="", t="15", i="0.01"):
                 prevline = line
                 line = fp.readline()
                 cnt += 1
+            col_name = "HO_Lat: " + str(iperf_cnt * float(i))
+            csv_input[col_name] = pd.Series(col)
+            csv_input.to_csv(filename + ".csv", index=False)
 
 if __name__ == "__main__":
     txt(sys.argv[1])

@@ -25,7 +25,7 @@ def run():
 
     # Data collection
     with open('run_output.txt', 'w') as fp:
-        for i in [0, 0, 0.01, 0.04, 0.16, 0.64, 1.28]:
+        for i in [0, 0, 0.01, 0.128, 0.256, 0.512, 1.28]:
             # Set New IP
             try:
                 ip = _ip_base + str(next(_ip_pool))
