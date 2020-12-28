@@ -19,6 +19,9 @@ Steps:
 * mmcli -L - identify modem id of the dongle
 * mmcli -m [modem_id] --simple-connect="apn=[APN]" - connect to the cellular provider
 * make sure the dongle is in "connected" mode (mmcli -m [modem id]) and ping -I [iface] google.com
+* check the bearer: mmcli -b [bearer id]; identify the interface name, ip, gateway ip..
+* `ifconfig [iface] [ip]; route add default gw [gateway ip] [iface]`
+* (note: configure the DNS to 8.8.8.8, e.g., via resolvconf)
 * cd ho_proxy; make qc - start qcsuper
 
 ### Setup 2: Phone (HotSpot, ADB) + Laptop
