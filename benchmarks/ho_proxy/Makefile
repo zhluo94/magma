@@ -53,10 +53,12 @@ del-tun:
 vxlan: | br
 	$(info see README)
 
-# nat
-.PHONY: nat
+# other net changes
+.PHONY: nat mtu
 nat:
 	$(info see README)
+mtu: 
+	ifconfig wg0 mtu 1600 up
 
 # mptcp
 .PHONY: mptcp tracebox
