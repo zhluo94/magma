@@ -1,6 +1,5 @@
 #!/bin/bash
 # Adapted from http://multipath-tcp.org/pmwiki.php?n=Main.50Gbps
-
 IFACES="eth0"
 
 MTU=9000
@@ -28,7 +27,7 @@ service irqbalance stop
 
 # Let's use jumbo frames
 for iface in $IFACES; do
-	ifconfig $iface mtu $MTU txqueuelen $TXQ 
+	ifconfig $iface mtu $MTU txqueuelen $TXQ
 done
 
 # Interrupt coalescing
@@ -39,7 +38,7 @@ done
 # IRQ CPU Affinity
 # [TBD 2] Update the irq
 for i in {27..29}; do
-	echo "01" > /proc/irq/$i/smp_affinity
+	echo "1" > /proc/irq/$i/smp_affinity
 done
 
 # Configure sysctl's
