@@ -32,6 +32,7 @@ def loop():
     _ip_base = "172.17.0."
     _ip_pool = iter(range(5, 128))
     handover_start = False
+    handover_complete = False
     while True:
         if (source, select.POLLIN) in poll.poll(2000):  # 2s
             ts, pkt = get_packet(source)
