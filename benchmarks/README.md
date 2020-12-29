@@ -30,7 +30,8 @@ Mitmproxy
 * TBD
 
 Iperf/iperf3
-* Refer to `man iperf`
+* Refer to `man iperf/iperf3`
+* Note: use `iperf3 -R` from the UE side to let the server to send traffic; current MPTCP implementation has a "server_side" flag that prohibits non TCP initiator to start subflow.
 
 ### Run (client-side)
 TBD
