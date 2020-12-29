@@ -2,7 +2,7 @@
 
 
 ### Setup
-* MPTCP Enabled AMI: `ami-03adfa7041d312b18` (perfd-cellular, us-west-1)
+* MPTCP Enabled AMI: `ami-06b93cd6edfe1ee9f` (perfd-cellular-stage-5, us-west-1)
 * MPTCP Disabled AMI: `ami-0849b21b423a6baaa` (perfd-cellular-mptcp_disabled, us-west-1)
 * The AMI has MPTCP (v0.94) enabled
 * The AMI includes mobile applications (more to be added in the long run) with datasets and scripts to start benchmarking, described in what follows. 
