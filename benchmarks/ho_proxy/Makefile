@@ -75,4 +75,4 @@ con:
 # dongle
 .PHONY: qc
 qc:
-	sudo ./qcsuper.py --usb-modem /dev/ttyUSB0 --wireshark-live # replace ttyUSB0 if different serial file
+	sudo ./QCSuper/qcsuper.py --usb-modem /dev/ttyUSB0 --wireshark-live # replace ttyUSB0 if different serial file
