@@ -136,7 +136,9 @@ SNAT at HOST2:
 iptables -t nat -A POSTROUTING -p udp --destination [Ditto] -j SNAT --to-source :12345
 ```
 
-Note: for all tunneling setup, remember to adjust MTU properly (e.g., 1600).
-
+Note: for all tunneling setup, remember to adjust MTU properly (e.g., 1600). E.g., for wg0:
+```
+ifconfig wg0 mtu 1600 up
+```
 
 
