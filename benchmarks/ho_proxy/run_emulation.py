@@ -46,7 +46,7 @@ def run():
             time.sleep(5)
             app.do(new_ip=ip, lat=i)
             # Wait for 5 more seconds for iperf stream to finish
-            time.sleep(5)
+            time.sleep(5.5)
 
 if __name__ == "__main__":
     run()
