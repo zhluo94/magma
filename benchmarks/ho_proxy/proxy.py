@@ -22,7 +22,7 @@ def get_packet(fd: int) -> (bytes, bytes):
 
 
 def loop():
-    imc = pyshark.InMemCapture(linktype=228)
+    imc = pyshark.InMemCapture(linktype=228, custom_parameters={"-J": "lte_rrc"})
 
     source = os.open(_pipe, os.O_RDONLY | os.O_NONBLOCK)
 
@@ -33,6 +33,8 @@ def loop():
     _ip_pool = iter(range(5, 128))
     handover_start = False
     handover_complete = False
+    cell_id = None
+
     while True:
         if (source, select.POLLIN) in poll.poll(2000):  # 2s
             ts, pkt = get_packet(source)
@@ -40,15 +42,17 @@ def loop():
             continue
 
         pkt = imc.parse_packet(pkt)
-
         # print("timestamp:", ts, pkt, dir(pkt.lte_rrc))
 
         # cell id
-        cell_id = None
+        new_cell_id = None
         try:
-            cell_id = pkt.lte_rrc.physcellid
+            new_cell_id = pkt.lte_rrc.lte_rrc_physcellid
         except AttributeError:
             pass
+
+        if new_cell_id != None:
+            cell_id = new_cell_id
 
         # Check handover completes
         if handover_start:
@@ -60,6 +64,7 @@ def loop():
 
             # Record
             if (handover_complete):
+                print("***** Handover completes! *****")
                 try:
                     ip = _ip_base + str(next(_ip_pool))
                 except StopIteration:
@@ -72,11 +77,17 @@ def loop():
         # handover start
         try:
             handover_start = pkt.lte_rrc.lte_rrc_mobilitycontrolinfo_element == 'mobilityControlInfo'
+            if handover_start:
+                print("***** Handover starts! *****")
         except AttributeError:
             pass
 
         # TBD which timestamp
         print(time.time(), handover_complete, cell_id)
+
+        # Reset handover completes
+        if handover_complete:
+            handover_complete = False
 
 
 if __name__ == "__main__":
