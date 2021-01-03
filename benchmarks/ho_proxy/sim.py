@@ -1,16 +1,17 @@
 #!/usr/bin/python3
 
 """
-Run a sequence of emulation handovers with different handover latencies.
-Prerequesite, remote container running at 172.17.0.2 with an iperf server.
+Simulate a sequence of handovers with different handover latencies and measure application performance.
+Prerequisite: remote container running at 172.17.0.2 with an iperf server.
 """
 
+
+import ho
 import app
 import time
-import numpy as np
+
 
 def run():
-
     # define IP Pool
     _ip_base = "172.17.0."
     _ip_pool = iter(range(5, 128))
@@ -21,7 +22,7 @@ def run():
     except StopIteration:
         _ip_pool = iter(range(5, 128))
         ip = _ip_base + str(next(_ip_pool))
-    app.do(new_ip=ip, lat=0)
+    ho.do(new_ip=ip, lat=0)
 
     # Data collection
     with open('run_output.txt', 'w') as fp:
@@ -38,15 +39,16 @@ def run():
             app.start_iperf(t="20", i="0.1", file=fp)
             # Handover at 5 seconds
             time.sleep(5)
-            app.do(new_ip=ip, lat=i)
+            ho.do(new_ip=ip, lat=i)
             # Handover at 10 seconds
             time.sleep(5)
-            app.do(new_ip=ip, lat=i)
+            ho.do(new_ip=ip, lat=i)
             # Handover at 15 seconds
             time.sleep(5)
-            app.do(new_ip=ip, lat=i)
+            ho.do(new_ip=ip, lat=i)
             # Wait for 5 more seconds for iperf stream to finish
             time.sleep(5.5)
+
 
 if __name__ == "__main__":
     run()

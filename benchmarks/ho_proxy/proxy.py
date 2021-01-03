@@ -11,7 +11,7 @@ import os
 import time
 from struct import unpack
 import select
-import app
+import ho
 
 _pipe = "/tmp/pcap_buffer"
 
@@ -63,7 +63,7 @@ def loop():
                 pass
 
             # Record
-            if (handover_complete):
+            if handover_complete:
                 print("***** Handover completes! *****")
                 try:
                     ip = _ip_base + str(next(_ip_pool))
@@ -71,7 +71,7 @@ def loop():
                     _ip_pool = iter(range(5, 128))
                     ip = _ip_base + str(next(_ip_pool))
 
-                app.do(new_ip=ip, lat=0.02)
+                ho.do(new_ip=ip, lat=0.02)
             handover_start = False
 
         # handover start
