@@ -83,7 +83,13 @@ def loop():
             pass
 
         # TBD which timestamp
-        print(time.time(), handover_complete, cell_id)
+        event = 'RRC'
+        if handover_complete:
+            event = 'HO_END'
+        if handover_start:
+            event = 'HO_START'
+
+        print(time.time(), event, cell_id)
 
         # Reset handover completes
         if handover_complete:
