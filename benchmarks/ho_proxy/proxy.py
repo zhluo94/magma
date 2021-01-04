@@ -35,6 +35,13 @@ def loop():
     handover_complete = False
     cell_id = None
 
+    test_mode = os.getenv('TEST_SETUP')
+    if test_mode == None or not (test_mode in ['mptcp', 'tcpwo', 'tcp']):
+        print("TEST_SETUP env variable not set")
+        return 
+    else:
+        print('Test mode: {}'.format(test_mode))
+
     while True:
         if (source, select.POLLIN) in poll.poll(2000):  # 2s
             ts, pkt = get_packet(source)
@@ -71,7 +78,8 @@ def loop():
                     _ip_pool = iter(range(5, 128))
                     ip = _ip_base + str(next(_ip_pool))
 
-                ho.do(new_ip=ip, lat=0.02)
+                if test_mode != 'tcpwo':
+                    ho.do(new_ip=ip, lat=0.02)
             handover_start = False
 
         # handover start
