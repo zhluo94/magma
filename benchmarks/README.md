@@ -11,15 +11,11 @@ These AMI include mobile applications (more to be added in the long run) with da
 * Multimedia communication (e.g. SIP, RTP): [PJSIP](https://github.com/pjsip/pjproject)
 * Web: [mitmproxy](https://github.com/mitmproxy/mitmproxy)
 
-### Setup (Docker container)
-
 Pre-built docker image silveryfu/celleval:app (to be used with the tunnel setup, see /ho_proxy) includes the application benchmarks (same as the AMIs) and can be used at both the client- and server-side.
 
-### Run application benchmarks (with VM)
+>TBD run application benchmarks on VM
 
->TBD
-
-### Run application benchmarks (with container)
+### Setup (Docker container)
 
 Applications are located in the /home directory of the container image:
 ```
@@ -38,6 +34,8 @@ web page loading:
 * The client side will generate a web request every second and reports the completion time
 
 video streaming:
+* Mount video clips from the host/VM to the container, i.e., ` -v /mnt/clips:/mnt/clips` 
+* Start nginx (run `nginx`);
 * Run `FILE=../clips/[videofile] make stream` under `/mnt/hls/`
 * 480p clip: `/mnt/clips/bun480p.mp4` (33s)
 * 1080p clip: `/mnt/clips/greenland.mp4` (159s)
@@ -49,6 +47,10 @@ SIP (PJSIP):
 * Run pjproject/pjsip-apps/bin/[binary] with --null-audio option [TBD: Makefile]
 * [WIP]
 
+Complete docker run command:
+```
+docker run -v /mnt/clips:/mnt/clips --name=uec -itd silveryfu/celleval:app /bin/bash
+```
 
 
 
