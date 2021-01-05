@@ -43,13 +43,20 @@ video streaming:
 
 SIP (PJSIP):
 
-* Register a SIP account (e.g., onsip.com)
-* Run pjproject/pjsip-apps/bin/[binary] with --null-audio option [TBD: Makefile]
+* Mount audio clips from the host/VM to the container, i.e., `-v /mnt/audio:/mnt/audio`
+* `cd /home/sip`
+* Identify the SIP uri `./receiver.py show_uri`
+* Start the call receiver: `./receiver.py`
+* Start the caller `./caller.py [SIP uri]`
+
+Calling known SIP account:
+* Register a SIP account (e.g., onsip.com, optional)
+* Run pjproject/pjsip-apps/bin/[binary] with --null-audio option
 * [WIP]
 
 Complete docker run command:
 ```
-docker run -v /mnt/clips:/mnt/clips --name=uec -itd silveryfu/celleval:app /bin/bash
+docker run -v /mnt/clips:/mnt/clips -v /mnt/audio:/mnt/audio --name=uec -itd silveryfu/celleval:app /bin/bash
 ```
 
 
