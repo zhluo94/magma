@@ -8,6 +8,7 @@ Prerequesite, remote container running at 172.17.0.2 with an iperf server.
 import app
 import time
 import numpy as np
+from datetime import datetime
 
 def run():
 
@@ -25,7 +26,7 @@ def run():
 
     # Data collection
     with open('run_output.txt', 'w') as fp:
-        for i in [0, 0, 0.01, 0.128, 0.256, 0.512, 1.28]:
+        for i in np.arange(0.0, 0.5, 0.1):
             # Set New IP
             try:
                 ip = _ip_base + str(next(_ip_pool))
@@ -38,15 +39,31 @@ def run():
             app.start_iperf(t="20", i="0.1", file=fp)
             # Handover at 5 seconds
             time.sleep(5)
+            t = datetime.now().time()
+            print("IP Handover: " + ip + ", Time: " + str(t))
             app.do(new_ip=ip, lat=i)
             # Handover at 10 seconds
+            try:
+                ip = _ip_base + str(next(_ip_pool))
+            except StopIteration:
+                _ip_pool = iter(range(5, 128))
+                ip = _ip_base + str(next(_ip_pool))
             time.sleep(5)
+            t = datetime.now().time()
+            print("IP Handover: " + ip + ", Time: " + str(t))
             app.do(new_ip=ip, lat=i)
             # Handover at 15 seconds
+            try:
+                ip = _ip_base + str(next(_ip_pool))
+            except StopIteration:
+                _ip_pool = iter(range(5, 128))
+                ip = _ip_base + str(next(_ip_pool))
             time.sleep(5)
+            t = datetime.now().time()
+            print("IP Handover: " + ip + ", Time: " + str(t))
             app.do(new_ip=ip, lat=i)
             # Wait for 5 more seconds for iperf stream to finish
-            time.sleep(5.5)
+            time.sleep(6)
 
 if __name__ == "__main__":
     run()
