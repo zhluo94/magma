@@ -38,7 +38,7 @@ def txt(filename="", t="15", i="0.01"):
                     if (val < 10):
                         val *= 1000
                     col.append(str(val))
-                if ("[ ID] Interval" in  line):
+                if ("[ ID] Interval" in  line and ("------" not in prevline and "- - - - " not in prevline)):
                     iperf_cnt += 1
                     collect_data = True
                 prevline = line
