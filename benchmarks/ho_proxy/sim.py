@@ -43,7 +43,7 @@ def run_iperf():
             time.sleep(5)
             t = datetime.now().time()
             print("IP Handover: " + ip + ", Time: " + str(t))
-            app.do(new_ip=ip, lat=i)
+            ho.do(new_ip=ip, lat=i)
             # Handover at 10 seconds
             try:
                 ip = _ip_base + str(next(_ip_pool))
@@ -53,7 +53,7 @@ def run_iperf():
             time.sleep(5)
             t = datetime.now().time()
             print("IP Handover: " + ip + ", Time: " + str(t))
-            app.do(new_ip=ip, lat=i)
+            ho.do(new_ip=ip, lat=i)
             # Handover at 15 seconds
             try:
                 ip = _ip_base + str(next(_ip_pool))
@@ -63,7 +63,7 @@ def run_iperf():
             time.sleep(5)
             t = datetime.now().time()
             print("IP Handover: " + ip + ", Time: " + str(t))
-            app.do(new_ip=ip, lat=i)
+            ho.do(new_ip=ip, lat=i)
             # Wait for 5 more seconds for iperf stream to finish
             time.sleep(6)
 
@@ -95,7 +95,7 @@ def run_sip():
             time.sleep(5)
             t = datetime.now().time()
             print("IP Handover: " + ip + ", Time: " + str(t))
-            app.do(new_ip=ip, lat=i)
+            ho.do(new_ip=ip, lat=i)
             # Handover at 10 seconds
             try:
                 ip = _ip_base + str(next(_ip_pool))
@@ -105,7 +105,7 @@ def run_sip():
             time.sleep(5)
             t = datetime.now().time()
             print("IP Handover: " + ip + ", Time: " + str(t))
-            app.do(new_ip=ip, lat=i)
+            ho.do(new_ip=ip, lat=i)
             # Handover at 15 seconds
             try:
                 ip = _ip_base + str(next(_ip_pool))
@@ -115,7 +115,7 @@ def run_sip():
             time.sleep(5)
             t = datetime.now().time()
             print("IP Handover: " + ip + ", Time: " + str(t))
-            app.do(new_ip=ip, lat=i)
+            ho.do(new_ip=ip, lat=i)
             # Wait for 5 more seconds for iperf stream to finish
             time.sleep(6)
 

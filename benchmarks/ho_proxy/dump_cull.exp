@@ -1,0 +1,13 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+
+spawn ./launch_sip_client.sh
+
+expect ">>> "
+
+sleep 5
+
+send -- "q\r"
+
+expect eof
