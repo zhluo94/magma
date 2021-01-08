@@ -7,6 +7,7 @@ Benchmark applications.
 import sys
 import pandas as pd
 import subprocess
+import time
 from subprocess import PIPE
 
 
@@ -73,6 +74,31 @@ def parse_iperf(filename="", t="15", i="0.01"):
             # col_name = "HO_Lat: " + str(iperf_cnt * float(i))
             # csv_input[col_name] = pd.Series(col)
             # csv_input.to_csv(filename + ".csv", index=False)
+
+def start_sip(name="uec", mode="c", ip="172.17.0.2", file=None):
+    _cmd = "pjsua sip:{}:5060 --local-port 5061 --null-audio --no-tcp".format(ip)
+    if mode == "s":
+        _cmd = "pjsua --play-file /mnt/audio/sound.wav --auto-answer 200 --auto-play --auto-loop --null-audio --no-tcp"
+    _exec = "sudo docker exec -it {} {}"
+
+    if file:
+        p = subprocess.Popen(";".join([
+            _exec.format(name, _cmd)]),
+            shell=True, stdout=file, stderr=file, stdin=PIPE)
+        time.sleep(5)
+        p.stdin.write('h')
+        time.sleep(5)
+        p.stdin.write('q')
+    else:
+        p = subprocess.Popen(";".join([
+            _exec.format(name, _cmd)]),
+            shell=True, stdout=PIPE, stderr=PIPE, stdin=PIPE)
+        time.sleep(5)
+        p.stdin.write('h')
+        time.sleep(5)
+        p.stdin.write('q')
+        output = p.stdout.read()
+        print(str(output, 'utf-8'))
 
 
 if __name__ == "__main__":

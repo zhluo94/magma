@@ -13,7 +13,7 @@ import numpy as np
 from datetime import datetime
 
 
-def run():
+def run_iperf():
     # define IP Pool
     _ip_base = "172.17.0."
     _ip_pool = iter(range(5, 128))
@@ -67,6 +67,32 @@ def run():
             # Wait for 5 more seconds for iperf stream to finish
             time.sleep(6)
 
+def run_sip():
+    # define IP Pool
+    _ip_base = "172.17.0."
+    _ip_pool = iter(range(5, 128))
+
+    # Set initial IP
+    try:
+        ip = _ip_base + str(next(_ip_pool))
+    except StopIteration:
+        _ip_pool = iter(range(5, 128))
+        ip = _ip_base + str(next(_ip_pool))
+    ho.do(new_ip=ip, lat=0)
+
+    with open('sip_output.txt', 'w') as fp:
+        for i in np.arange(0.0, 0.5, 0.1):
+            # Set New IP
+            try:
+                ip = _ip_base + str(next(_ip_pool))
+            except StopIteration:
+                _ip_pool = iter(range(5, 128))
+                ip = _ip_base + str(next(_ip_pool))
+
+
 
 if __name__ == "__main__":
-    run()
+    if sys.argv[1] == "iperf":
+        run_iperf()
+    elif sys.argv[1] == "sip":
+        run_sip()
