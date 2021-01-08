@@ -1,0 +1,22 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+set max 22
+
+spawn ./launch_sip_client.sh
+
+sleep 2
+
+send -- "dq\r"
+
+for {set i 0} {$i < $max} {incr i 1} {
+    expect ">>> "
+    sleep 1
+    send -- "dq\r"
+}
+
+sleep 2
+
+send -- "q\r"
+
+expect eof

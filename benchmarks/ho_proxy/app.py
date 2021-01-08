@@ -75,25 +75,13 @@ def parse_iperf(filename="", t="15", i="0.01"):
             # csv_input[col_name] = pd.Series(col)
             # csv_input.to_csv(filename + ".csv", index=False)
 
-def start_sip(name="uec", mode="c", ip="172.17.0.2", file=None):
-    _cmd = "pjsua sip:{}:5060 --local-port 5061 --null-audio --no-tcp".format(ip)
-    if mode == "s":
-        _cmd = "pjsua --play-file /mnt/audio/sound.wav --auto-answer 200 --auto-play --auto-loop --null-audio --no-tcp"
-    # _cmd = "echo hello"
-    _exec = "sudo docker exec -it {} {}"
+def start_sip_client(file=None):
+    _exec = "./dump_call.exp"
 
     if file:
-        p = subprocess.Popen([_exec.format(name, _cmd)], shell=True, stdout=file, stderr=file, stdin=PIPE)
-        time.sleep(5)
-        p.stdin.write(bytes('h\n', 'utf-8'))
-        time.sleep(5)
-        p.stdin.write(bytes('q\n', 'utf-8'))
+        p = subprocess.Popen([_exec], shell=True, stdout=file, stderr=file)
     else:
-        p = subprocess.Popen([_exec.format(name, _cmd)], shell=True, stdout=PIPE, stderr=PIPE, stdin=PIPE)
-        time.sleep(5)
-        p.stdin.write(bytes('h\n', 'utf-8'))
-        time.sleep(5)
-        p.stdin.write(bytes('q\n', 'utf-8'))
+        p = subprocess.Popen([_exec], shell=True, stdout=PIPE, stderr=PIPE)
         output = p.stdout.read()
         print(str(output, 'utf-8'))
 

@@ -5,7 +5,7 @@ Simulate a sequence of handovers with different handover latencies and measure a
 Prerequisite: remote container running at 172.17.0.2 with an iperf server.
 """
 
-
+import sys
 import ho
 import app
 import time
@@ -81,7 +81,7 @@ def run_sip():
     ho.do(new_ip=ip, lat=0)
 
     with open('sip_output.txt', 'w') as fp:
-        for i in np.arange(0.0, 0.5, 0.1):
+        for i in np.arange(0.0, 0.02, 0.02):
             # Set New IP
             try:
                 ip = _ip_base + str(next(_ip_pool))
@@ -89,7 +89,7 @@ def run_sip():
                 _ip_pool = iter(range(5, 128))
                 ip = _ip_base + str(next(_ip_pool))
 
-            app.start_sip()
+            app.start_sip_client(file=fp)
 
             # Handover at 5 seconds
             time.sleep(5)
