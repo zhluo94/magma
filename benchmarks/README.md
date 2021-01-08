@@ -26,6 +26,7 @@ iperf  sip  video  web
 iperf (iperf3):
 * Refer to `man iperf3`
 * Note: use `iperf3 -R` from the UE side to let the server to send traffic; current MPTCP implementation has a "server_side" flag that prohibits non TCP initiator to start subflow.
+* Note: for all benchmarks remember to configure the EC2 security groups to allow traffic of the particular protocols and ports.
 
 web page loading:
 * `cd /home/web`
@@ -35,11 +36,11 @@ web page loading:
 
 video streaming:
 * Mount video clips from the host/VM to the container, i.e., ` -v /mnt/clips:/mnt/clips` 
-* Start nginx (run `nginx`);
-* Run `FILE=../clips/[videofile] make stream` under `/mnt/hls/`
-* 480p clip: `/mnt/clips/bun480p.mp4` (33s)
+* Start nginx: run `make video` under `/home/video`
+* Start streaming: run `FILE=../clips/[videofile] make stream` under `/mnt/hls/`
+* Start player: run `make play` under `/home/video`
+* 480p clip: `/mnt/clips/bun480p.mp4` (33s; default, played in a loop by `make stream`!)
 * 1080p clip: `/mnt/clips/greenland.mp4` (159s)
-* Note: for all benchmarks remember to configure the EC2 security groups to allow traffic of the particular protocols and ports.
 
 SIP (PJSIP):
 
