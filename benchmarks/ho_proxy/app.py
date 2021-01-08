@@ -79,24 +79,21 @@ def start_sip(name="uec", mode="c", ip="172.17.0.2", file=None):
     _cmd = "pjsua sip:{}:5060 --local-port 5061 --null-audio --no-tcp".format(ip)
     if mode == "s":
         _cmd = "pjsua --play-file /mnt/audio/sound.wav --auto-answer 200 --auto-play --auto-loop --null-audio --no-tcp"
+    # _cmd = "echo hello"
     _exec = "sudo docker exec -it {} {}"
 
     if file:
-        p = subprocess.Popen(";".join([
-            _exec.format(name, _cmd)]),
-            shell=True, stdout=file, stderr=file, stdin=PIPE)
+        p = subprocess.Popen([_exec.format(name, _cmd)], shell=True, stdout=file, stderr=file, stdin=PIPE)
         time.sleep(5)
-        p.stdin.write('h')
+        p.stdin.write(bytes('h\n', 'utf-8'))
         time.sleep(5)
-        p.stdin.write('q')
+        p.stdin.write(bytes('q\n', 'utf-8'))
     else:
-        p = subprocess.Popen(";".join([
-            _exec.format(name, _cmd)]),
-            shell=True, stdout=PIPE, stderr=PIPE, stdin=PIPE)
+        p = subprocess.Popen([_exec.format(name, _cmd)], shell=True, stdout=PIPE, stderr=PIPE, stdin=PIPE)
         time.sleep(5)
-        p.stdin.write('h')
+        p.stdin.write(bytes('h\n', 'utf-8'))
         time.sleep(5)
-        p.stdin.write('q')
+        p.stdin.write(bytes('q\n', 'utf-8'))
         output = p.stdout.read()
         print(str(output, 'utf-8'))
 
