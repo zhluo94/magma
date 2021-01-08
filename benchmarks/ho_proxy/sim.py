@@ -81,7 +81,7 @@ def run_sip():
     ho.do(new_ip=ip, lat=0)
 
     with open('sip_output.txt', 'w') as fp:
-        for i in np.arange(0.0, 0.02, 0.02):
+        for i in np.arange(0.0, 0.2, 0.02):
             # Set New IP
             try:
                 ip = _ip_base + str(next(_ip_pool))
@@ -89,7 +89,8 @@ def run_sip():
                 _ip_pool = iter(range(5, 128))
                 ip = _ip_base + str(next(_ip_pool))
 
-            app.start_sip_client(file=fp)
+            # *Not working at the moment
+            # app.start_sip_client(file=fp)
 
             # Handover at 5 seconds
             time.sleep(5)
