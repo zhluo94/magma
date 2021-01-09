@@ -57,7 +57,7 @@ Calling known SIP account:
 
 Complete docker run command:
 ```
-docker run -v /mnt/clips:/mnt/clips -v /mnt/audio:/mnt/audio --name=uec -itd silveryfu/celleval:app /bin/bash
+docker run -v /mnt/clips:/mnt/clips -v /mnt/audio:/mnt/audio --name=uec -itd --privileged --mac-address 00:00:00:00:00:10 silveryfu/celleval:app
 ```
 
 
