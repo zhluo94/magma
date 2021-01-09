@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 """
-Calculate MOS score in a SIP call log
+Calculate MOS score in a SIP call log and output a csv with the same filename
 """
 
 import sys
