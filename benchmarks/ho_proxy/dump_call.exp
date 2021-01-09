@@ -1,7 +1,14 @@
 #!/usr/bin/expect -f
 
 set timeout -1
-set max 22
+set max 1200
+
+trap {
+    send -- "h\r"
+    expect ">>> "
+    send -- "q\r"
+    send_user "You pressed Ctrl+C\n"
+} SIGINT
 
 spawn ./launch_sip_client.sh
 
