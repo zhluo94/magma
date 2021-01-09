@@ -46,9 +46,8 @@ SIP (PJSIP):
 
 * Mount audio clips from the host/VM to the container, i.e., `-v /mnt/audio:/mnt/audio`
 * `cd /home/sip`
-* Identify the SIP uri `./receiver.py show_uri`
-* Start the call receiver: `./receiver.py`
-* Start the caller `./caller.py [SIP uri]`
+* At server: `make recv`
+* At client: `make call`
 
 Calling known SIP account:
 * Register a SIP account (e.g., onsip.com, optional)
