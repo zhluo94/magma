@@ -54,10 +54,14 @@ Calling known SIP account:
 * Run pjproject/pjsip-apps/bin/[binary] with --null-audio option
 * [WIP]
 
-Complete docker run command:
+Complete docker run command (server):
 ```
 docker run -v /mnt/clips:/mnt/clips -v /mnt/audio:/mnt/audio --name=uec -itd --privileged --mac-address 00:00:00:00:00:10 silveryfu/celleval:app
 ```
 
+Complete docker run command (client):
+```
+docker run -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY --device /dev/snd --privileged --mac-address 00:00:00:00:00:10 --name=uec -itd silveryfu/celleval:app
 
+```
 
