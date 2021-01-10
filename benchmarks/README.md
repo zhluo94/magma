@@ -43,13 +43,13 @@ On server:
 On client (hls.js):
 * Start nginx: `make web` under `/home/web`
 * Start chrome: `su chrome` and `google-chrome`
-* Open player: ``
+* Open player: `localhost/demo/`
 
 On client (ffplay):
 * Start player: run `make play` under `/home/video`
 
 Recommended clips:
-* 
+* https://download.blender.org/peach/bigbuckbunny_movies/
 
 Sample clips on VM:
 * 480p clip: `/mnt/clips/bun480p.mp4` (33s; default, played in a loop by `make stream`!)
