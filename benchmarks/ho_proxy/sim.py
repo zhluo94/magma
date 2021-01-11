@@ -98,6 +98,7 @@ def run_iperf_freq():
                 t = datetime.now().time()
                 print("IP Handover: " + ip + ", Time: " + str(t))
                 ho.do(new_ip=ip, lat=latency)
+                time.sleep(10)
             elif i > 0:
                 for j in range(int(i)):
                     time.sleep(20/i)
@@ -109,6 +110,8 @@ def run_iperf_freq():
                     t = datetime.now().time()
                     print("IP Handover: " + ip + ", Time: " + str(t))
                     ho.do(new_ip=ip, lat=latency)
+            else:
+                time.sleep(20)
             # Wait for iPerf to finish
             time.sleep(2)
 
@@ -173,3 +176,5 @@ if __name__ == "__main__":
         run_iperf()
     elif sys.argv[1] == "sip":
         run_sip()
+    elif sys.argv[1] == "iperf_freq":
+        run_iperf_freq()
