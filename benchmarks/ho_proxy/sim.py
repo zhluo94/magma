@@ -79,15 +79,17 @@ def run_iperf_freq():
         _ip_pool = iter(range(5, 128))
         ip = _ip_base + str(next(_ip_pool))
     ho.do(new_ip=ip, lat=0)
+    time.sleep(1)
 
     latency = 0.032072
 
     # Data collection
     with open('run_output.txt', 'w') as fp:
-        for i in np.arange(0, 10, 1):
-
+        for i in range(11):
             # Start iPerf
-            app.start_iperf(t="20", i="0.1", file=fp)
+            app.start_iperf(t="25", i="0.1", file=fp)
+
+            # One Handover
             if i == 1:
                 time.sleep(10)
                 try:
@@ -100,7 +102,7 @@ def run_iperf_freq():
                 ho.do(new_ip=ip, lat=latency)
                 time.sleep(10)
             elif i > 0:
-                for j in range(int(i)):
+                for j in range(i):
                     time.sleep(20/i)
                     try:
                         ip = _ip_base + str(next(_ip_pool))
@@ -113,7 +115,7 @@ def run_iperf_freq():
             else:
                 time.sleep(20)
             # Wait for iPerf to finish
-            time.sleep(2)
+            time.sleep(6)
 
 def run_sip():
     # define IP Pool
