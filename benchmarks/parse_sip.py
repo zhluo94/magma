@@ -7,10 +7,18 @@ Calculate MOS score in a SIP call log and output a csv with the same filename
 import sys
 import pandas as pd
 import mos_score as mos
+import time
+from datetime import date
 
 def txt(filename = "", colname = "MOS Score"):
     if (filename):
-        with open(filename + ".txt", 'r') as fp:
+        if len(filename.split('_')) == 4:
+            log_date = filename.split('_')[3][:10] #YYYY-MM-DD
+        else:
+            # use today
+            log_date = date.today().strftime("%Y-%m-%d")
+        
+        with open(filename, 'r') as fp:
             line = fp.readline()
             with open(filename + ".csv", 'w') as emtpy_csv:
                 pass
@@ -21,7 +29,13 @@ def txt(filename = "", colname = "MOS Score"):
             jitter = ""
             loss = ""
             col = []
+            timestamp = 0
+
             while line:
+                if ("pjsua_app_common.c !" in line):
+                    log_time = line.split()[0]
+                    time_struct = time.strptime(log_date + "-" + log_time,  "%Y-%m-%d-%H:%M:%S.%f")
+                    timestamp = time.mktime(time_struct) + float('0.' + log_time.split('.')[-1])
                 if ("Call time:" in line):
                     row = ""
                     latency = ""
@@ -41,7 +55,7 @@ def txt(filename = "", colname = "MOS Score"):
                 if ("RTT" in line):
                     split_line = line.split()
                     latency = split_line[4]
-                    mos_value = mos.calculate_mos(latency, jitter, loss)
+                    mos_value = mos.calculate_mos(latency, jitter, loss, timestamp)
                     col.append(str(mos_value))
                 if ("DISCONNECTED" in line or ".PJSUA destroyed" in line):
                     try:

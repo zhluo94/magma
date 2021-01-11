@@ -6,7 +6,7 @@ Calculate MOS score based on call statistics
 
 import sys
 
-def calculate_mos(lat, jit, loss):
+def calculate_mos(lat, jit, loss, timestamp):
     latency = float(lat)
     jitter = float(jit)
     pktloss = float(loss)
@@ -20,7 +20,7 @@ def calculate_mos(lat, jit, loss):
 
     MOS = 1 + (0.035 * R) + (0.000007 * R * (R - 60) * (100 -R))
     
-    print(MOS)
+    print(timestamp, MOS)
     return MOS
 
 if __name__ == "__main__":
