@@ -25,10 +25,11 @@ def run_iperf():
         _ip_pool = iter(range(5, 128))
         ip = _ip_base + str(next(_ip_pool))
     ho.do(new_ip=ip, lat=0)
+    time.sleep(1)
 
     # Data collection
     with open('run_output.txt', 'w') as fp:
-        for i in np.arange(0.0, 1, 0.05):
+        for i in [0, 0.032, 0.064, 0.128, 0.256, 0.512, 1]:
             # Set New IP
             try:
                 ip = _ip_base + str(next(_ip_pool))
@@ -85,7 +86,7 @@ def run_iperf_freq():
 
     # Data collection
     with open('run_output.txt', 'w') as fp:
-        for i in range(11):
+        for i in [0, 1, 2, 4, 8]:
             # Start iPerf
             app.start_iperf(t="25", i="0.1", file=fp)
 
