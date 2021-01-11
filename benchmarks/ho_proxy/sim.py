@@ -28,7 +28,7 @@ def run_iperf():
 
     # Data collection
     with open('run_output.txt', 'w') as fp:
-        for i in np.arange(0.0, 0.5, 0.1):
+        for i in np.arange(0.0, 1, 0.05):
             # Set New IP
             try:
                 ip = _ip_base + str(next(_ip_pool))
