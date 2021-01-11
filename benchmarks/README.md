@@ -49,7 +49,7 @@ On client (ffplay):
 * Start player: run `make play` under `/home/video`
 
 Recommended clips:
-* https://download.blender.org/peach/bigbuckbunny_movies/
+* https://mirror.clarkson.edu/blender/demo/movies/BBB/
 
 Sample clips on VM:
 * 480p clip: `/mnt/clips/bun480p.mp4` (33s; default, played in a loop by `make stream`!)
