@@ -42,7 +42,7 @@ On server:
 
 On client (hls.js):
 * Start nginx: `make web` under `/home/web`
-* Start firefox: `firefox`
+* Start firefox: `firefox`; use the private mode to avoid cache
 * Open player: `localhost/demo/`
 
 On client (ffplay):
