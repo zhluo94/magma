@@ -75,7 +75,7 @@ def parse_iperf(filename="", t="15", i="0.01"):
             # csv_input[col_name] = pd.Series(col)
             # csv_input.to_csv(filename + ".csv", index=False)
 
-def parse_iperf_sensitivity(filename="", t="15", i="0.01"):
+def parse_iperf_sensitivity(filename="", t="15", i="0.05"):
     """
     Parse an iperf text file output and insert into CSV.
     """

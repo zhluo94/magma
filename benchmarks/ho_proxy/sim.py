@@ -67,6 +67,51 @@ def run_iperf():
             # Wait for 5 more seconds for iperf stream to finish
             time.sleep(6)
 
+def run_iperf_freq():
+    # define IP Pool
+    _ip_base = "172.17.0."
+    _ip_pool = iter(range(5, 128))
+
+    # Set initial IP
+    try:
+        ip = _ip_base + str(next(_ip_pool))
+    except StopIteration:
+        _ip_pool = iter(range(5, 128))
+        ip = _ip_base + str(next(_ip_pool))
+    ho.do(new_ip=ip, lat=0)
+
+    latency = 0.032072
+
+    # Data collection
+    with open('run_output.txt', 'w') as fp:
+        for i in np.arange(0, 10, 1):
+
+            # Start iPerf
+            app.start_iperf(t="20", i="0.1", file=fp)
+            if i == 1:
+                time.sleep(10)
+                try:
+                    ip = _ip_base + str(next(_ip_pool))
+                except StopIteration:
+                    _ip_pool = iter(range(5, 128))
+                    ip = _ip_base + str(next(_ip_pool))
+                t = datetime.now().time()
+                print("IP Handover: " + ip + ", Time: " + str(t))
+                ho.do(new_ip=ip, lat=latency)
+            elif i > 0:
+                for j in range(int(i)):
+                    time.sleep(20/i)
+                    try:
+                        ip = _ip_base + str(next(_ip_pool))
+                    except StopIteration:
+                        _ip_pool = iter(range(5, 128))
+                        ip = _ip_base + str(next(_ip_pool))
+                    t = datetime.now().time()
+                    print("IP Handover: " + ip + ", Time: " + str(t))
+                    ho.do(new_ip=ip, lat=latency)
+            # Wait for iPerf to finish
+            time.sleep(2)
+
 def run_sip():
     # define IP Pool
     _ip_base = "172.17.0."
