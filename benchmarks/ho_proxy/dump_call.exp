@@ -10,10 +10,15 @@ trap {
     send_user "You pressed Ctrl+C\n"
 } SIGINT
 
+trap {
+    send -- "I\r"
+    expect ">>> "
+    send_user "IP change\n"
+} SIGUSR1
+
 spawn ./launch_sip_client.sh
 
 sleep 2
-
 send -- "dq\r"
 
 for {set i 0} {$i < $max} {incr i 1} {
