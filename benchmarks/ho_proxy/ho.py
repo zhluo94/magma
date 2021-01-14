@@ -18,7 +18,6 @@ def change_con_ip(new_ip, name="uec", ifac="eth0",
     _exec = "docker exec -it {} /bin/bash -c '{}' > /dev/null 2>&1"
 
     _cmd = _exec.format(name, ";".join([_del, _sleep, _add, _gw, _msg]))
-    print(_cmd)
     subprocess.Popen(_cmd, shell=True)
 
 
