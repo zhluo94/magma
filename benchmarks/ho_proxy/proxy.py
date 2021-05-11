@@ -36,7 +36,7 @@ def loop():
     cell_id = None
 
     test_mode = os.getenv('TEST_SETUP')
-    if test_mode == None or not (test_mode in ['mptcp', 'tcpwo', 'tcp']):
+    if test_mode == None or not (test_mode in ['mptcp', 'tcpwo', 'tcp', 'sip', 'sipwo']):
         print("TEST_SETUP env variable not set")
         return 
     else:
@@ -78,8 +78,10 @@ def loop():
                     _ip_pool = iter(range(5, 128))
                     ip = _ip_base + str(next(_ip_pool))
 
-                if test_mode != 'tcpwo':
-                    ho.do(new_ip=ip, lat=0.02)
+                if not (test_mode in ['tcpwo','sipwo']):
+                    #ho.do(new_ip=ip, lat=32.072 * 1e-3, name="uec_new2")
+                    ho.do(new_ip=ip, lat=96.0 * 1e-3, name="uec_new2") 
+
             handover_start = False
 
         # handover start

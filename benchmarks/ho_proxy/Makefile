@@ -20,7 +20,7 @@ dongle:
 mon:
 	cd ./QCSuper; sudo ./qcsuper.py --usb-modem /dev/ttyUSB0 --wireshark-live
 proxy:
-	sudo ./proxy.py
+	sudo unbuffer python3 proxy.py | tee proxy_log_${TEST_SETUP}_$(date +"%F-%T")	
 
 # tunnels
 .PHONY: wg br gre tun del-tun
