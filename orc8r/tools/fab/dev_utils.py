@@ -15,13 +15,16 @@ from fabric.api import hide, run
 
 from tools.fab import types, vagrant
 
+CERT_DIR = 'test_certs_aws_west2' #'test_certs_aws_east1' #'test_certs_aws_west1' #'test_certs'
+ADMIN_CERT = './../../.cache/{}/admin_operator.pem'.format(CERT_DIR)
+ADMIN_KEY = './../../.cache/{}/admin_operator.key.pem'.format(CERT_DIR)
 
 def register_generic_gateway(
         network_id: str,
         vm_name: str,
         admin_cert: types.ClientCert = types.ClientCert(
-            cert='./../../.cache/test_certs/admin_operator.pem',
-            key='./../../.cache/test_certs/admin_operator.key.pem',
+            cert=ADMIN_CERT,
+            key=ADMIN_KEY,
         ),
 ) -> None:
     """
@@ -85,15 +88,15 @@ def construct_magmad_gateway_payload(gateway_id: str,
         ),
     )
 
-
-PORTAL_URL = 'https://127.0.0.1:9443/magma/v1/'
+ORC8R_IP = "44.234.38.153" #"3.238.172.135" # "54.67.50.223" # "127.0.0.1"
+PORTAL_URL = 'https://{}:9443/magma/v1/'.format(ORC8R_IP)
 
 
 def get_next_available_gateway_id(
         network_id: str,
         admin_cert: types.ClientCert = types.ClientCert(
-            cert='./../../.cache/test_certs/admin_operator.pem',
-            key='./../../.cache/test_certs/admin_operator.key.pem',
+            cert=ADMIN_CERT,
+            key=ADMIN_KEY,
         ),
 ) -> str:
     """
@@ -122,8 +125,8 @@ def get_next_available_gateway_id(
 def does_network_exist(
         network_id: str,
         admin_cert: types.ClientCert = types.ClientCert(
-            cert='./../../.cache/test_certs/admin_operator.pem',
-            key='./../../.cache/test_certs/admin_operator.key.pem',
+            cert=ADMIN_CERT,
+            key=ADMIN_KEY,
         ),
 ) -> bool:
     """
@@ -142,8 +145,8 @@ def does_network_exist(
 def create_tier_if_not_exists(
         network_id: str, tier_id: str,
         admin_cert: types.ClientCert = types.ClientCert(
-            cert='./../../.cache/test_certs/admin_operator.pem',
-            key='./../../.cache/test_certs/admin_operator.key.pem',
+            cert=ADMIN_CERT,
+            key=ADMIN_KEY,
         ),
 ) -> None:
     """
@@ -184,8 +187,8 @@ def get_hardware_id_from_vagrant(vm_name: str) -> str:
 def is_hw_id_registered(
         network_id: str, hw_id: str,
         admin_cert: types.ClientCert = types.ClientCert(
-            cert='./../../.cache/test_certs/admin_operator.pem',
-            key='./../../.cache/test_certs/admin_operator.key.pem',
+            cert=ADMIN_CERT,
+            key=ADMIN_KEY,
         ),
 ) -> (bool, str):
     """
@@ -236,8 +239,8 @@ def connect_gateway_to_cloud(control_proxy_setting_path, cert_path):
 def cloud_get(
         resource: str,
         admin_cert: types.ClientCert = types.ClientCert(
-            cert='./../../.cache/test_certs/admin_operator.pem',
-            key='./../../.cache/test_certs/admin_operator.key.pem',
+            cert=ADMIN_CERT,
+            key=ADMIN_KEY,
         ),
 ) -> Any:
     """
@@ -261,8 +264,8 @@ def cloud_post(
         data: Any,
         params: Dict[str, str] = None,
         admin_cert: types.ClientCert = types.ClientCert(
-            cert='./../../.cache/test_certs/admin_operator.pem',
-            key='./../../.cache/test_certs/admin_operator.key.pem',
+            cert=ADMIN_CERT,
+            key=ADMIN_KEY,
         ),
 ):
     """
