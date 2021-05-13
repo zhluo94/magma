@@ -97,23 +97,6 @@ brokerClient &brokerClient::get_instance()
 
 brokerClient::brokerClient()
 {
-   // Create channel based on relay_enabled and cloud_subscriberdb_enabled
-   // flags. If relay_enabled is true, then create a channel towards the FeG.
-   // Otherwise, create a channel towards either local or cloud-based
-   // subscriberdb.
-  // if (get_s6a_relay_enabled() == true) {
-  //   auto channel = ServiceRegistrySingleton::Instance()->GetGrpcChannel(
-  //     "s6a_proxy", ServiceRegistrySingleton::CLOUD);
-  //   // Create stub for S6aProxy gRPC service
-  //   stub_ = S6aProxy::NewStub(channel);
-  // }
-  // else {
-  //   auto channel = ServiceRegistrySingleton::Instance()->GetGrpcChannel(
-  //     "subscriberdb", ServiceRegistrySingleton::LOCAL);
-  //   // Create stub for subscriberdb gRPC service
-  //   stub_ = S6aProxy::NewStub(channel);
-  // }
-
   auto channel = ServiceRegistrySingleton::Instance()->GetGrpcChannel("brokerd", ServiceRegistrySingleton::CLOUD);
   stub_ = Brokerd::NewStub(channel);
 
