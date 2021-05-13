@@ -109,7 +109,7 @@ S6aClient::S6aClient()
   }
   else {
     auto channel = ServiceRegistrySingleton::Instance()->GetGrpcChannel(
-      "subscriberdb", ServiceRegistrySingleton::LOCAL);
+      "subscriberdb", ServiceRegistrySingleton::/*LOCAL*/CLOUD); 
     // Create stub for subscriberdb gRPC service
     stub_ = S6aProxy::NewStub(channel);
   }
