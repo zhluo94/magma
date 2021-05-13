@@ -44,6 +44,7 @@ using namespace magma::broker;
 static void _broker_handle_authentication_info_ans(
   const std::string &imsi,
   uint8_t imsi_length,
+  struct timespec start,
   const grpc::Status &status,
   broker::BrokerAuthenticationInformationAnswer response);
 
@@ -59,12 +60,14 @@ bool broker_authentication_info_req(const broker_auth_info_req_t *const air_p)
   auto imsi_len = air_p->imsi_length;
   std::cout << "[INFO] Sending Broker-AUTHENTICATION_INFORMATION_REQUEST with IMSI: "
               << std::string(air_p->imsi) << std::endl;
+  struct timespec start;
+  clock_gettime(CLOCK_MONOTONIC, &start);
 
   magma::brokerClient::authentication_info_req(
     air_p,
-    [imsiStr = std::string(air_p->imsi), imsi_len](
+    [imsiStr = std::string(air_p->imsi), imsi_len, start](
       grpc::Status status, broker::BrokerAuthenticationInformationAnswer response) {
-      _broker_handle_authentication_info_ans(imsiStr, imsi_len, status, response);
+      _broker_handle_authentication_info_ans(imsiStr, imsi_len, start, status, response);
     });
   return true;
 }
@@ -72,9 +75,16 @@ bool broker_authentication_info_req(const broker_auth_info_req_t *const air_p)
 static void _broker_handle_authentication_info_ans(
   const std::string &imsi,
   uint8_t imsi_length,
+  struct timespec start,
   const grpc::Status &status,
   broker::BrokerAuthenticationInformationAnswer response)
 {
+  struct timespec end;
+  clock_gettime(CLOCK_MONOTONIC, &end);
+  float sec_used = (end.tv_sec - start.tv_sec);
+  float milli_used = (sec_used * 1e3) + (float)(end.tv_nsec - start.tv_nsec)/1e6;
+  std::cout << "Broker AIR for IMSI " << imsi << " RPC takes: " << milli_used << " ms " << std::endl;
+
   MessageDef *message_p = NULL;
   broker_auth_info_ans_t *itti_msg = NULL;
 

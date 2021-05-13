@@ -14,6 +14,7 @@ from magma.subscriberdb.crypto.utils import CryptoError
 from magma.subscriberdb.store.base import SubscriberNotFoundError
 
 from feg.protos import s6a_proxy_pb2, s6a_proxy_pb2_grpc
+import time
 
 
 class S6aProxyRpcServicer(s6a_proxy_pb2_grpc.S6aProxyServicer):
@@ -38,6 +39,8 @@ class S6aProxyRpcServicer(s6a_proxy_pb2_grpc.S6aProxyServicer):
         """
         Adds a subscriber to the store
         """
+        start = time.clock_gettime(time.CLOCK_THREAD_CPUTIME_ID)
+        start2 = time.clock_gettime(time.CLOCK_MONOTONIC)
         imsi = request.user_name
         aia = s6a_proxy_pb2.AuthenticationInformationAnswer()
         try:
@@ -64,7 +67,10 @@ class S6aProxyRpcServicer(s6a_proxy_pb2_grpc.S6aProxyServicer):
             eutran_vector.xres = xres
             eutran_vector.autn = autn
             eutran_vector.kasme = kasme
-            logging.info("Auth success: %s", imsi)
+            end = time.clock_gettime(time.CLOCK_THREAD_CPUTIME_ID)
+            end2 = time.clock_gettime(time.CLOCK_MONOTONIC)
+            logging.warning('LTE authentication servicer spends: {} ms'.format((end - start)*1e3))
+            logging.warning('LTE authentication servicer takes: {} ms'.format((end2 - start2)*1e3))
             return aia
 
         except CryptoError as e:

@@ -120,7 +120,8 @@ class BrokerdRpcServicer(brokerd_pb2_grpc.BrokerdServicer):
         #  - request AuthenticationInformation to subscriberdb;
         #  - sign the response
         #  - create BrokerAuthenticationInformationAnswer and return
-        start = time.time()
+        start = time.clock_gettime(time.CLOCK_THREAD_CPUTIME_ID)
+        start2 = time.clock_gettime(time.CLOCK_MONOTONIC)
 
         myhash = sha1()
         ue_br_token = request.ue_br_token
@@ -150,23 +151,6 @@ class BrokerdRpcServicer(brokerd_pb2_grpc.BrokerdServicer):
         else:
             logging.info('Done verifying UT signature')
         
-        # # update location 
-        # ulr = s6a_proxy_pb2.UpdateLocationRequest()
-        # ulr.user_name = request.user_name
-        # ulr.visited_plmn = request.visited_plmn
-        # # ignore skip_subscriber_data and initial_attach for now
-        # # send request
-        # try:
-        #     ula = self._s6a_proxy_stub.UpdateLocation(ulr)
-        # except grpc.RpcError:
-        #     logging.error('Unable to update location for subscriber %s. ',
-        #                   request.user_name)
-        #     context.set_code(grpc.StatusCode.NOT_FOUND)
-        #     context.set_details('Failed to update location in broker')
-        #     return Void()
-
-        # bt_aia = self.getBrokerAuthenticationInformationAnswer(ue_id, ut_id, nonce, ula)
-
         # get subscriber data
         try:
             sub_data = self._subscriber_stub.GetSubscriberData(SubscriberID(id=request.user_name))
@@ -179,8 +163,10 @@ class BrokerdRpcServicer(brokerd_pb2_grpc.BrokerdServicer):
 
         bt_aia = self.getBrokerAuthenticationInformationAnswer(ue_id, ut_id, nonce, sub_data)
         
-        end = time.time()
-        logging.error('BT authentication servicer takes: {} ms'.format((end - start)*1e3))
+        end = time.clock_gettime(time.CLOCK_THREAD_CPUTIME_ID)
+        end2 = time.clock_gettime(time.CLOCK_MONOTONIC)
+        logging.error('BT authentication servicer spends: {} ms'.format((end - start)*1e3))
+        logging.error('BT authentication servicer takes: {} ms'.format((end2 - start2)*1e3))
         return bt_aia
 
     def BrokerUpdateLocation(self, request, context):

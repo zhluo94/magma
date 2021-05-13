@@ -435,6 +435,9 @@ static int _start_authentication_information_procedure(
   if(attach_proc && attach_proc->ies->btattachparametertoken && attach_proc->ies->btattachparameteruesig && attach_proc->ies->btattachparameterbrid) {
     OAILOG_INFO(LOG_NAS_EMM, "Initiate brokerd-uTelco authentication\n");
     emm_context->is_broker = true;
+    // bt req start time
+    struct timespec start, end;
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
     _nas_itti_broker_auth_info_req(
     ue_id,
     &emm_context->_imsi,
@@ -447,6 +450,11 @@ static int _start_authentication_information_procedure(
     attach_proc->ies->btattachparameterbrid,
     emm_context->ut_private_ecdsa,
     emm_context->ut_private_rsa);
+    // bt req end time
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &end);
+    float sec_used = (end.tv_sec - start.tv_sec);
+    float milli_used = (sec_used * 1e3) + (float)(end.tv_nsec - start.tv_nsec)/1e6;
+    OAILOG_INFO(LOG_NAS_EMM, "Broker auth info req %f ms\n", milli_used);
   } else {
     OAILOG_INFO(LOG_NAS_EMM, "Initiate standard authentication\n");
     emm_context->is_broker = false;
@@ -2113,6 +2121,10 @@ int emm_proc_broker_authentication_ksi(
 // auth infor success callback for broker
 static int _broker_auth_info_proc_success_cb(struct emm_context_s *emm_ctx)
 {
+  // time it
+  struct timespec start, end;
+  clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+
   OAILOG_FUNC_IN(LOG_NAS_EMM);
   OAILOG_INFO(LOG_NAS_EMM, "Broker authentication info proc success callback");
   nas_auth_info_proc_t *auth_info_proc =
@@ -2284,5 +2296,10 @@ static int _broker_auth_info_proc_success_cb(struct emm_context_s *emm_ctx)
       nas_delete_cn_procedure(emm_ctx, &auth_info_proc->cn_proc);
     }
   }
+  // time the end
+  clock_gettime(CLOCK_THREAD_CPUTIME_ID, &end);
+  float sec_used = (end.tv_sec - start.tv_sec);
+  float milli_used = (sec_used * 1e3) + (float)(end.tv_nsec - start.tv_nsec)/1e6;
+  OAILOG_INFO(LOG_NAS_EMM, "Broker auth info success cb %f ms\n", milli_used);
   OAILOG_FUNC_RETURN(LOG_NAS_EMM, rc);
 }

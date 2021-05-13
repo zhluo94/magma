@@ -25,6 +25,9 @@ SRSUE_IMSI = '001010123456780'
 SRSUE_KEY = '00112233445566778899AABBCCDDEEFF'
 SRSUE_OPC = '63BFA50EE6523365FF14C1F45F88737D'
 
+import time
+import logging
+
 class SqliteStore(BaseStore):
     """
     A thread-safe sqlite based implementation of the subscriber database.
@@ -91,6 +94,8 @@ class SqliteStore(BaseStore):
         """
         Context manager to modify the subscriber data.
         """
+        start = time.clock_gettime(time.CLOCK_THREAD_CPUTIME_ID)
+        start2 = time.clock_gettime(time.CLOCK_MONOTONIC)
         with self.conn:
             res = self.conn.execute(
                 "SELECT data FROM subscriberdb WHERE " "subscriber_id = ?",
@@ -107,6 +112,10 @@ class SqliteStore(BaseStore):
                 "UPDATE subscriberdb SET data = ? " "WHERE subscriber_id = ?",
                 (data_str, subscriber_id),
             )
+        end = time.clock_gettime(time.CLOCK_THREAD_CPUTIME_ID)
+        end2 = time.clock_gettime(time.CLOCK_MONOTONIC)
+        logging.warning('LTE edit sub spends: {} ms'.format((end - start)*1e3))
+        logging.warning('LTE edit sub takes: {} ms'.format((end2 - start2)*1e3))
 
     def delete_subscriber(self, subscriber_id):
         """
