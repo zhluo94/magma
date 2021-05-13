@@ -1,0 +1,34 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+set max 1200
+
+trap {
+    send -- "h\r"
+    expect ">>> "
+    send -- "q\r"
+    send_user "You pressed Ctrl+C\n"
+} SIGINT
+
+trap {
+    send -- "I\r"
+    expect ">>> "
+    send_user "IP change\n"
+} SIGUSR1
+
+spawn ./launch_sip_client.sh
+
+sleep 2
+send -- "dq\r"
+
+for {set i 0} {$i < $max} {incr i 1} {
+    expect ">>> "
+    sleep 1
+    send -- "dq\r"
+}
+
+sleep 2
+
+send -- "q\r"
+
+expect eof

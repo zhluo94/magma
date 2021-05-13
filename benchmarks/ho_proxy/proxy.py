@@ -22,14 +22,26 @@ def get_packet(fd: int) -> (bytes, bytes):
 
 
 def loop():
-    imc = pyshark.InMemCapture(linktype=228)
+    imc = pyshark.InMemCapture(linktype=228, custom_parameters={"-J": "lte_rrc"})
 
     source = os.open(_pipe, os.O_RDONLY | os.O_NONBLOCK)
 
     poll = select.poll()
     poll.register(source, select.POLLIN)
 
-    _ip_pool = iter(range(128))
+    _ip_base = "172.17.0."
+    _ip_pool = iter(range(5, 128))
+    handover_start = False
+    handover_complete = False
+    cell_id = None
+
+    test_mode = os.getenv('TEST_SETUP')
+    if test_mode == None or not (test_mode in ['mptcp', 'tcpwo', 'tcp', 'sip', 'sipwo']):
+        print("TEST_SETUP env variable not set")
+        return 
+    else:
+        print('Test mode: {}'.format(test_mode))
+
     while True:
         if (source, select.POLLIN) in poll.poll(2000):  # 2s
             ts, pkt = get_packet(source)
@@ -37,35 +49,61 @@ def loop():
             continue
 
         pkt = imc.parse_packet(pkt)
-
         # print("timestamp:", ts, pkt, dir(pkt.lte_rrc))
 
         # cell id
-        cell_id = None
+        new_cell_id = None
         try:
-            cell_id = pkt.lte_rrc.physcellid
+            new_cell_id = pkt.lte_rrc.lte_rrc_physcellid
         except AttributeError:
             pass
 
-        # handover
-        handover = False
-        try:
-            handover = pkt.lte_rrc.lte_rrc_mobilitycontrolinfo_element == 'mobilityControlInfo'
-        except AttributeError:
-            pass
+        if new_cell_id != None:
+            cell_id = new_cell_id
 
-        # record
-        if handover:
+        # Check handover completes
+        if handover_start:
+            handover_complete = False
             try:
-                ip = next(_ip_pool)
-            except StopIteration:
-                _ip_pool = iter(range(128))
-                ip = next(_ip_pool)
+                handover_complete = pkt.lte_rrc.lte_rrc_rrcconnectionreconfigurationcomplete_element == 'rrcConnectionReconfigurationComplete'
+            except AttributeError:
+                pass
 
-            ho.do(new_ip=ip, lat=0.02)
+            # Record
+            if handover_complete:
+                print("***** Handover completes! *****")
+                try:
+                    ip = _ip_base + str(next(_ip_pool))
+                except StopIteration:
+                    _ip_pool = iter(range(5, 128))
+                    ip = _ip_base + str(next(_ip_pool))
+
+                if not (test_mode in ['tcpwo','sipwo']):
+                    #ho.do(new_ip=ip, lat=32.072 * 1e-3, name="uec_new2")
+                    ho.do(new_ip=ip, lat=96.0 * 1e-3, name="uec_new2") 
+
+            handover_start = False
+
+        # handover start
+        try:
+            handover_start = pkt.lte_rrc.lte_rrc_mobilitycontrolinfo_element == 'mobilityControlInfo'
+            if handover_start:
+                print("***** Handover starts! *****")
+        except AttributeError:
+            pass
 
         # TBD which timestamp
-        print(time.time(), handover, cell_id)
+        event = 'RRC'
+        if handover_complete:
+            event = 'HO_END'
+        if handover_start:
+            event = 'HO_START'
+
+        print(time.time(), event, cell_id)
+
+        # Reset handover completes
+        if handover_complete:
+            handover_complete = False
 
 
 if __name__ == "__main__":

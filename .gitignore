@@ -81,3 +81,6 @@ devmand/gateway/cmake-build-debug/
 
 # android
 platform-tools/
+
+# vscode
+.vscode/

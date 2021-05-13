@@ -1,6 +1,6 @@
 # Handover Proxy
 
-Handover proxy enables emulating handover over existing cellular infrastrucuture across a pair of client device and server.
+The handover proxy setup enables emulating IP handovers. This may be run over existing cellular infrastrucuture using a modified version of QCSuper to simulate the frequency and real world scenerios of cellular networks. 
 
 ### Prerequisites
 
@@ -76,9 +76,9 @@ Start containers on both hosts:
 
 ```bash
 # host 1
-sudo docker run --name uec --privileged -itd --mac-address 00:00:00:00:00:10 ubuntu
+sudo docker run --name uec --privileged -itd --mac-address 00:00:00:00:00:10 silveryfu/celleval
 # host 2
-sudo docker run --name uec --privileged -itd --mac-address 00:00:00:00:00:20 ubuntu
+sudo docker run --name uec --privileged -itd --mac-address 00:00:00:00:00:20 silveryfu/celleval
 ```
 
 Install dependencies:
@@ -136,7 +136,9 @@ SNAT at HOST2:
 iptables -t nat -A POSTROUTING -p udp --destination [Ditto] -j SNAT --to-source :12345
 ```
 
-Note: for all tunneling setup, remember to adjust MTU properly (e.g., 1600).
-
+Note: for all tunneling setup, remember to adjust MTU properly (e.g., 1600). E.g., for wg0:
+```
+ifconfig wg0 mtu 1600 up
+```
 
 

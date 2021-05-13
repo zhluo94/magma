@@ -8,7 +8,6 @@ endif
 WG_LOCAL:=$(shell cat /etc/wireguard/wg0.conf | grep Address | cut -d' ' -f3)
 ifeq ($(WG_LOCAL), $(WG_REMOTE))
 $(info wg remote and local ip shouldn't be equal, remote: $(WG_REMOTE))
-	exit 1
 endif
 
 # dongle config
@@ -21,7 +20,7 @@ dongle:
 mon:
 	cd ./QCSuper; sudo ./qcsuper.py --usb-modem /dev/ttyUSB0 --wireshark-live
 proxy:
-	sudo ./proxy.py
+	sudo unbuffer python3 proxy.py | tee proxy_log_${TEST_SETUP}_$(date +"%F-%T")	
 
 # tunnels
 .PHONY: wg br gre tun del-tun
@@ -54,10 +53,12 @@ del-tun:
 vxlan: | br
 	$(info see README)
 
-# nat
-.PHONE: nat
+# other net changes
+.PHONY: nat mtu
 nat:
 	$(info see README)
+mtu: 
+	ifconfig wg0 mtu 1600 up
 
 # mptcp
 .PHONY: mptcp tracebox
@@ -71,3 +72,7 @@ tracebox:
 con:
 	sudo docker run --name uec --privileged -itd --mac-address $(CON_MAC) silveryfu/celleval:latest
 
+# dongle
+.PHONY: qc
+qc:
+	sudo ./QCSuper/qcsuper.py --usb-modem /dev/ttyUSB0 --wireshark-live # replace ttyUSB0 if different serial file
