@@ -380,16 +380,17 @@ int emm_proc_detach_request(
   nas_emm_detach_proc_t *detach_proc = get_nas_specific_procedure_detach(emm_ctx);
   if (!detach_proc) {
     detach_proc = nas_new_detach_procedure(emm_ctx);
-    AssertFatal(detach_proc, "TODO Handle this");
-      if ((detach_proc)) {
-      ((nas_base_proc_t *) detach_proc)->abort = NULL; // TODO
-      ((nas_base_proc_t *) detach_proc)->fail_in = NULL; // No parent procedure
-      ((nas_base_proc_t *) detach_proc)->time_out = NULL;
-      ((nas_base_proc_t *) detach_proc)->fail_out = NULL; // TODO
-    }
   }
-  detach_proc->ies = params;
-  detach_proc->ue_id = ue_id;
+  // TODO: handle detach_proc = NULL
+  if(detach_proc && false) // for now
+  {
+    ((nas_base_proc_t *) detach_proc)->abort = NULL; // TODO
+    ((nas_base_proc_t *) detach_proc)->fail_in = NULL; // No parent procedure
+    ((nas_base_proc_t *) detach_proc)->time_out = NULL;
+    ((nas_base_proc_t *) detach_proc)->fail_out = NULL; // TODO
+    detach_proc->ies = params;
+    detach_proc->ue_id = ue_id;
+  }
   if(emm_ctx->is_broker && false) {
     rc = emm_proc_usage_report(emm_ctx, &detach_proc->emm_spec_proc, _emm_detach_success_usage_report_cb, _emm_detach_success_usage_report_cb); //use the same call back for now
   } else {
