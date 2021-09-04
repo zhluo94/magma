@@ -16,18 +16,23 @@
     state: present
     id: 2E97854368E14ED8FB6F80903E838E02450E78EA
 
+- name: remove the old magma repo
+  apt_repository:
+    repo: 'deb https://magma.jfrog.io/magma/list/{{ repo }}/ {{ distribution }} main'
+    state: absent
+    update_cache: yes
+
 - name: Add apt-transport-https
   apt: pkg=apt-transport-https state=present update_cache=yes
 #  when: preburn
 
 - name: Add JFrog key
   apt_key:
-    data: "{{ lookup('file', 'jfrog.pub') }}"
+    url: https://facebookconnectivity.jfrog.io/artifactory/api/gpg/key/public 
     state: present
-    id: EF3F24737CD69751BFF9C592B5A959C7EC708105
 
 - name: Add JFrog repo
   apt_repository:
-    repo: 'deb https://magma.jfrog.io/magma/list/{{ repo }}/ {{ distribution }} main'
+    repo: 'deb https://facebookconnectivity.jfrog.io/artifactory/list/{{ repo }}/ {{ distribution }} main' 
     update_cache: yes
     mode: 0644
